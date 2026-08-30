@@ -1,0 +1,257 @@
+/* ============================================
+   RPG PORTFOLIO - PIXEL ART GAME STYLES
+   ============================================ */
+
+/* Pixel Font Import */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* ============================================
+   CSS VARIABLES - RPG PALETTE
+   ============================================ */
+:root {
+  --rpg-bg-dark: #1a1a2e;
+  --rpg-bg-medium: #16213e;
+  --rpg-panel-bg: #0f3460;
+  --rpg-panel-border: #e94560;
+  --rpg-text: #eee;
+  --rpg-text-dim: #999;
+  --rpg-accent: #e94560;
+  --rpg-accent-glow: #ff6b81;
+  --rpg-green: #4ade80;
+  --rpg-blue: #60a5fa;
+  --rpg-gold: #fbbf24;
+  --rpg-red: #ef4444;
+  --rpg-purple: #a78bfa;
+  --rpg-pixel-size: 4px;
+  --rpg-font: 'Press Start 2P', monospace;
+}
+
+/* ============================================
+   PIXEL BORDER UTILITY
+   ============================================ */
+.pixel-border {
+  border: 4px solid var(--rpg-panel-border);
+  box-shadow:
+    inset 0 0 0 2px var(--rpg-bg-dark),
+    0 0 0 2px var(--rpg-bg-dark),
+    0 0 15px rgba(233, 69, 96, 0.3);
+}
+
+.pixel-border-gold {
+  border: 4px solid var(--rpg-gold);
+  box-shadow:
+    inset 0 0 0 2px var(--rpg-bg-dark),
+    0 0 0 2px var(--rpg-bg-dark),
+    0 0 15px rgba(251, 191, 36, 0.3);
+}
+
+/* ============================================
+   PIXEL BUTTON
+   ============================================ */
+.rpg-button {
+  font-family: var(--rpg-font);
+  font-size: 10px;
+  padding: 8px 16px;
+  background: var(--rpg-panel-bg);
+  color: var(--rpg-text);
+  border: 3px solid var(--rpg-panel-border);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.1s;
+  image-rendering: pixelated;
+}
+
+.rpg-button:hover {
+  background: var(--rpg-panel-border);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 0 10px var(--rpg-accent-glow);
+}
+
+.rpg-button:active {
+  transform: scale(0.95);
+}
+
+/* ============================================
+   GAME WORLD ANIMATIONS
+   ============================================ */
+
+/* Cloud float */
+@keyframes cloudFloat {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(30px); }
+}
+
+@keyframes cloudFloat2 {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-20px); }
+}
+
+/* Grass sway */
+@keyframes grassSway {
+  0%, 100% { transform: skewX(0deg); }
+  25% { transform: skewX(2deg); }
+  75% { transform: skewX(-2deg); }
+}
+
+@keyframes grassSway2 {
+  0%, 100% { transform: skewX(0deg); }
+  33% { transform: skewX(-3deg); }
+  66% { transform: skewX(3deg); }
+}
+
+/* Tree sway */
+@keyframes treeSway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(1deg); }
+}
+
+/* Flower bob */
+@keyframes flowerBob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-2px) rotate(3deg); }
+}
+
+/* Trainer idle */
+@keyframes trainerIdle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes trainerBreathe {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.02); }
+}
+
+/* Arrow bounce */
+@keyframes arrowBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes arrowGlow {
+  0%, 100% { box-shadow: 0 0 5px var(--rpg-gold); }
+  50% { box-shadow: 0 0 20px var(--rpg-gold), 0 0 30px rgba(251, 191, 36, 0.5); }
+}
+
+/* Cursor blink */
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Panel slide in */
+@keyframes panelSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes panelSlideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+}
+
+/* Fade in */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Star twinkle */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Moon glow */
+@keyframes moonGlow {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 255, 200, 0.5)); }
+  50% { filter: drop-shadow(0 0 20px rgba(255, 255, 200, 0.8)); }
+}
+
+/* Particle float */
+@keyframes particleFloat {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100px) translateX(20px); opacity: 0; }
+}
+
+/* Selection flash */
+@keyframes selectFlash {
+  0% { background: transparent; }
+  50% { background: rgba(233, 69, 96, 0.3); }
+  100% { background: transparent; }
+}
+
+/* Badge unlock */
+@keyframes badgeUnlock {
+  0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+  60% { transform: scale(1.2) rotate(10deg); opacity: 1; }
+  80% { transform: scale(0.9) rotate(-5deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Shimmer effect */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Bird fly */
+@keyframes birdFly {
+  0% { transform: translateX(-100px) translateY(0); }
+  25% { transform: translateX(25vw) translateY(-20px); }
+  50% { transform: translateX(50vw) translateY(10px); }
+  75% { transform: translateX(75vw) translateY(-15px); }
+  100% { transform: translateX(110vw) translateY(5px); }
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+.rpg-scroll::-webkit-scrollbar {
+  width: 12px;
+}
+
+.rpg-scroll::-webkit-scrollbar-track {
+  background: var(--rpg-bg-dark);
+  border: 2px solid var(--rpg-panel-border);
+}
+
+.rpg-scroll::-webkit-scrollbar-thumb {
+  background: var(--rpg-panel-border);
+  border: 2px solid var(--rpg-bg-dark);
+}
+
+.rpg-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--rpg-accent-glow);
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
