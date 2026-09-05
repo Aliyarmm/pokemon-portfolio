@@ -59,7 +59,7 @@ export const GameInterface: React.FC<GameInterfaceProps> = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.28 }}
             className="fixed inset-0 z-40"
-            style={{ background: "rgba(8, 8, 24, 0.6)" }}
+            style={{ background: "rgba(8, 8, 24, 0.28)" }}
             onClick={() => { sfx.play("sectionClose"); onClose(); }}
           />
 

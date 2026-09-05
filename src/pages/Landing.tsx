@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { GameWorld } from "@/game/GameWorld";
 import { Trainer } from "@/game/Trainer";
 import { CommandMenu, type CommandOption } from "@/game/CommandMenu";
@@ -130,16 +131,37 @@ export default function Landing() {
       : "A wild portfolio appeared! ABID wants to show you around.";
 
   const inWorld = screen === "world" || screen === "menu" || screen === "section";
+  const uiOpen = screen === "menu" || screen === "section";
+
+  /* universal close: section → menu → world */
+  const handleClose = useCallback(() => {
+    if (screen === "section") {
+      sfx.play("sectionClose");
+      setActiveSection(null);
+      setScreen("menu");
+    } else if (screen === "menu") {
+      sfx.play("menuBack");
+      setScreen("world");
+    }
+  }, [screen]);
 
   return (
     <div className="relative w-full h-[100dvh] overflow-hidden select-none">
-      {/* World */}
+      {/* World (z-0 stacking context) */}
       {inWorld && (
         <>
-          <GameWorld timeOfDay={timeOfDay} dimmed={screen !== "world"} />
+          <GameWorld timeOfDay={timeOfDay} />
           <Trainer onHatClick={handleHatClick} />
           <div className="crt-overlay" />
         </>
+      )}
+
+      {/* World dim layer — sits above world (z-0), below menu/section UI (z-30+) */}
+      {inWorld && (
+        <div
+          className="absolute inset-0 pointer-events-none z-10 transition-opacity duration-300"
+          style={{ opacity: screen === "world" ? 0 : 1, background: "rgba(10,10,30,0.55)" }}
+        />
       )}
 
       {/* Greeting dialog after title */}
@@ -176,11 +198,11 @@ export default function Landing() {
         onClose={closeSection}
       />
 
-      {/* Sound toggle chip (top right) */}
-      {inWorld && (
+      {/* Sound toggle chip (hidden while a section panel is up — M key still works) */}
+      {inWorld && screen !== "section" && (
         <button
           onClick={() => { sfx.enabled = !sfx.enabled; setSoundOn(sfx.enabled); if (sfx.enabled) sfx.play("menuMove"); }}
-          className="absolute top-3 right-3 z-50 panel-chip"
+          className={`absolute z-[60] panel-chip ${uiOpen ? "top-[72px] right-2" : "top-3 right-3"}`}
           style={{
             fontFamily: "var(--rpg-font)",
             fontSize: 10,
@@ -194,6 +216,44 @@ export default function Landing() {
           {soundOn ? "🔊" : "🔇"}
         </button>
       )}
+
+      {/* Universal close button — exits section → menu → world */}
+      <AnimatePresence>
+        {uiOpen && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.18 }}
+            onClick={handleClose}
+            onMouseEnter={() => sfx.play("hover")}
+            aria-label="Close"
+            title="Close (ESC)"
+            className="absolute top-2 right-2 z-[70] flex items-center justify-center"
+            style={{
+              width: 44,
+              height: 44,
+              background: "var(--rpg-red)",
+              border: "3px solid var(--rpg-frame)",
+              borderRadius: 10,
+              boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.85), 0 4px 0 rgba(0,0,0,0.3)",
+            }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <span
+              style={{
+                fontFamily: "var(--rpg-font)",
+                fontSize: 14,
+                color: "#fff",
+                textShadow: "1px 1px 0 rgba(0,0,0,0.5)",
+                lineHeight: 1,
+              }}
+            >
+              ✕
+            </span>
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Time-of-day chip */}
       {inWorld && (

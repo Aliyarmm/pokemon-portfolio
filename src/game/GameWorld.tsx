@@ -2,7 +2,6 @@ import React, { useMemo } from "react";
 
 interface GameWorldProps {
   timeOfDay: "day" | "evening" | "night";
-  dimmed: boolean;
 }
 
 /* ── GBA-inspired palette ── */
@@ -255,7 +254,7 @@ const Firefly: React.FC<{ x: number; y: number; delay: number }> = ({ x, y, dela
 );
 
 /* ── Main component ── */
-export const GameWorld: React.FC<GameWorldProps> = ({ timeOfDay, dimmed }) => {
+export const GameWorld: React.FC<GameWorldProps> = ({ timeOfDay }) => {
   const p = pal[timeOfDay];
   const isNight = timeOfDay === "night";
   const isDay = timeOfDay === "day";
@@ -331,7 +330,7 @@ export const GameWorld: React.FC<GameWorldProps> = ({ timeOfDay, dimmed }) => {
   return (
     <div
       className="absolute inset-0 overflow-hidden"
-      style={{ background: `linear-gradient(180deg, ${p.skyTop} 0%, ${p.skyMid} 35%, ${p.skyLow} 62%, ${p.haze} 100%)` }}
+      style={{ background: `linear-gradient(180deg, ${p.skyTop} 0%, ${p.skyMid} 35%, ${p.skyLow} 62%, ${p.haze} 100%)`, zIndex: 0 }}
     >
       {/* stars */}
       {isNight &&
@@ -436,12 +435,6 @@ export const GameWorld: React.FC<GameWorldProps> = ({ timeOfDay, dimmed }) => {
           <Firefly x={85} y={72} delay={1.2} />
         </>
       )}
-
-      {/* dim overlay when menus open */}
-      <div
-        className="absolute inset-0 pointer-events-none z-[60] transition-opacity duration-300"
-        style={{ opacity: dimmed ? 1 : 0, background: "rgba(10,10,30,0.55)" }}
-      />
     </div>
   );
 };
