@@ -1,111 +1,66 @@
 import React, { useState } from "react";
 import { bag, type BagItem } from "@/data";
+import { sfx } from "../sfx";
 
 export const BagSection: React.FC = () => {
-  const [selected, setSelected] = useState<BagItem | null>(null);
+  const [selected, setSelected] = useState<BagItem>(bag[0]);
 
   return (
-    <div className="p-4 md:p-6 h-full overflow-y-auto rpg-scroll">
-      {/* Header */}
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-xl">🎒</span>
-        <div
-          style={{
-            fontFamily: "var(--rpg-font)",
-            fontSize: "14px",
-            color: "var(--rpg-gold)",
-            textShadow: "0 0 10px rgba(251, 191, 36, 0.5)",
-          }}
-        >
-          BAG
+    <div className="h-full overflow-y-auto rpg-scroll p-3 md:p-6">
+      <div className="max-w-2xl mx-auto">
+        {/* item grid (classic 2-col bag) */}
+        <div className="panel-frame p-3 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {bag.map((item) => {
+              const sel = selected.id === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => { setSelected(item); sfx.play("menuMove"); }}
+                  className="flex items-center gap-3 p-2.5 text-left min-h-[56px]"
+                  style={{
+                    background: sel ? "rgba(233,69,96,0.08)" : "rgba(255,255,255,0.6)",
+                    border: `3px solid ${sel ? "var(--rpg-red)" : "#d8d8d8"}`,
+                  }}
+                >
+                  <span style={{ color: "var(--rpg-red)", fontSize: 10, opacity: sel ? 1 : 0 }}>▶</span>
+                  <span
+                    className="shrink-0 flex items-center justify-center text-lg"
+                    style={{ width: 40, height: 40, background: "#FFF8E1", border: "2px solid #d4b106" }}
+                  >
+                    {item.icon}
+                  </span>
+                  <div className="min-w-0">
+                    <div style={{ fontFamily: "var(--rpg-font)", fontSize: "clamp(8px,2vw,10px)", color: "#222" }}>
+                      {item.name}
+                    </div>
+                    <div className="stat-label mt-1" style={{ color: "#888" }}>{item.type}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      <div
-        className="mb-4"
-        style={{
-          height: "3px",
-          background: "linear-gradient(90deg, var(--rpg-accent), var(--rpg-gold), var(--rpg-accent))",
-        }}
-      />
-
-      {/* Inventory Grid */}
-      <div className="space-y-2 mb-4">
-        {bag.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setSelected(item)}
-            className="w-full text-left p-3 transition-all duration-100 flex items-center gap-3"
-            style={{
-              background:
-                selected?.id === item.id
-                  ? "rgba(233, 69, 96, 0.2)"
-                  : "rgba(255,255,255,0.03)",
-              border: `2px solid ${
-                selected?.id === item.id ? "var(--rpg-accent)" : "rgba(255,255,255,0.08)"
-              }`,
-            }}
-          >
-            <div
-              className="w-10 h-10 flex items-center justify-center text-lg"
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                border: "2px solid rgba(255,255,255,0.1)",
-              }}
-            >
-              {item.icon}
+        {/* detail + use */}
+        <div className="panel-frame p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-2xl">{selected.icon}</span>
+            <div>
+              <div className="panel-title" style={{ fontSize: "clamp(11px,2.5vw,14px)" }}>{selected.name}</div>
+              <div className="stat-label mt-1">{selected.description}</div>
             </div>
-            <div className="flex-1">
-              <div
-                style={{
-                  fontFamily: "var(--rpg-font)",
-                  fontSize: "9px",
-                  color: "var(--rpg-text)",
-                }}
-              >
-                {item.name}
-              </div>
-              <div
-                style={{
-                  fontFamily: "var(--rpg-font)",
-                  fontSize: "6px",
-                  color: "var(--rpg-text-dim)",
-                  marginTop: "2px",
-                }}
-              >
-                {item.description}
-              </div>
-            </div>
-            <div
-              style={{
-                fontFamily: "var(--rpg-font)",
-                fontSize: "6px",
-                color: "var(--rpg-text-dim)",
-              }}
-            >
-              {item.type}
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Use button */}
-      {selected && (
-        <div className="text-center">
+          </div>
           <a
             href={selected.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="rpg-button inline-block"
-            style={{
-              fontFamily: "var(--rpg-font)",
-              fontSize: "9px",
-            }}
+            className="rpg-button w-full text-center block min-h-[44px] leading-[44px] text-[9px]"
           >
             USE {selected.name} →
           </a>
         </div>
-      )}
+      </div>
     </div>
   );
 };

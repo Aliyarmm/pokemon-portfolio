@@ -1,253 +1,322 @@
-/* ============================================
-   RPG PORTFOLIO - PIXEL ART GAME STYLES
-   ============================================ */
+/* ============================================================
+   RPG PORTFOLIO — GAMEBOY-STYLE UI STYLES
+   Authentic chunky frames, parchment dialogs, crisp pixels
+   ============================================================ */
 
-/* Pixel Font Import */
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
-/* ============================================
-   CSS VARIABLES - RPG PALETTE
-   ============================================ */
 :root {
-  --rpg-bg-dark: #1a1a2e;
-  --rpg-bg-medium: #16213e;
-  --rpg-panel-bg: #0f3460;
-  --rpg-panel-border: #e94560;
-  --rpg-text: #eee;
-  --rpg-text-dim: #999;
-  --rpg-accent: #e94560;
-  --rpg-accent-glow: #ff6b81;
-  --rpg-green: #4ade80;
-  --rpg-blue: #60a5fa;
-  --rpg-gold: #fbbf24;
-  --rpg-red: #ef4444;
-  --rpg-purple: #a78bfa;
-  --rpg-pixel-size: 4px;
-  --rpg-font: 'Press Start 2P', monospace;
+  --rpg-red: #e8534f;
+  --rpg-red-dark: #c53a36;
+  --rpg-blue: #4f8fe8;
+  --rpg-green: #4caf50;
+  --rpg-gold: #c9a227;
+  --rpg-purple: #9575cd;
+  --rpg-ink: #212121;
+  --rpg-paper: #f8f4e8;
+  --rpg-paper-dark: #e8e0cc;
+  --rpg-frame: #2a2a3a;
+  --rpg-frame-light: #ffffff;
+  --rpg-shadow: rgba(0, 0, 0, 0.22);
+  --rpg-font: "Press Start 2P", monospace;
 }
 
-/* ============================================
-   PIXEL BORDER UTILITY
-   ============================================ */
-.pixel-border {
-  border: 4px solid var(--rpg-panel-border);
+/* ── DIALOG FRAME (Pokémon message box style) ── */
+.dialog-frame {
+  position: relative;
+  background: var(--rpg-paper);
+  border: 3px solid var(--rpg-frame);
+  border-radius: 10px;
   box-shadow:
-    inset 0 0 0 2px var(--rpg-bg-dark),
-    0 0 0 2px var(--rpg-bg-dark),
-    0 0 15px rgba(233, 69, 96, 0.3);
+    inset 0 0 0 2px var(--rpg-frame-light),
+    inset 0 0 0 4px var(--rpg-paper-dark),
+    0 4px 0 rgba(0, 0, 0, 0.25);
+  padding: 14px 16px;
 }
 
-.pixel-border-gold {
-  border: 4px solid var(--rpg-gold);
-  box-shadow:
-    inset 0 0 0 2px var(--rpg-bg-dark),
-    0 0 0 2px var(--rpg-bg-dark),
-    0 0 15px rgba(251, 191, 36, 0.3);
-}
-
-/* ============================================
-   PIXEL BUTTON
-   ============================================ */
-.rpg-button {
+.dialog-text {
   font-family: var(--rpg-font);
-  font-size: 10px;
-  padding: 8px 16px;
-  background: var(--rpg-panel-bg);
-  color: var(--rpg-text);
-  border: 3px solid var(--rpg-panel-border);
-  cursor: pointer;
-  text-transform: uppercase;
-  transition: all 0.1s;
+  font-size: clamp(9px, 2.6vw, 13px);
+  line-height: 2;
+  color: var(--rpg-ink);
+  letter-spacing: 0.5px;
+  min-height: 3.6em;
+  margin: 0;
+}
+
+.dialog-caret {
+  animation: cursorBlink 0.8s steps(1) infinite;
+  color: var(--rpg-red);
+}
+
+.dialog-next {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  color: var(--rpg-red);
+  font-size: 12px;
+  animation: bobDown 0.7s ease-in-out infinite;
+}
+
+/* ── PANEL FRAME (menus / interfaces) ── */
+.panel-frame {
+  background: var(--rpg-paper);
+  border: 3px solid var(--rpg-frame);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 0 0 2px var(--rpg-frame-light),
+    inset 0 0 0 4px var(--rpg-paper-dark),
+    0 6px 0 rgba(0, 0, 0, 0.28);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--rpg-frame);
+  color: #fff;
+  border-bottom: 3px solid #1a1a28;
+}
+
+.panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--rpg-paper-dark);
+  border-top: 3px solid var(--rpg-frame);
+  font-family: var(--rpg-font);
+  font-size: 6px;
+  color: #777;
+}
+
+.panel-title {
+  font-family: var(--rpg-font);
+  color: #ffd54f;
+  letter-spacing: 1px;
+  font-size: clamp(10px, 2.4vw, 14px);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
+}
+
+.portrait-box {
+  background: #fff;
+  border: 3px solid var(--rpg-frame);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   image-rendering: pixelated;
 }
 
+.panel-sep {
+  height: 3px;
+  background: repeating-linear-gradient(90deg, var(--rpg-frame) 0 6px, transparent 6px 12px);
+  opacity: 0.35;
+  margin: 10px 0;
+}
+
+.section-heading {
+  font-family: var(--rpg-font);
+  font-size: 8px;
+  color: var(--rpg-red);
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.panel-chip {
+  background: #fff;
+  border: 2px solid var(--rpg-frame);
+}
+
+/* ── TYPE CHIPS ── */
+.type-chip {
+  display: inline-block;
+  font-family: var(--rpg-font);
+  font-size: 6px;
+  padding: 3px 6px;
+  background: #fff;
+  border: 2px solid;
+  white-space: nowrap;
+}
+
+/* ── STAT / INFO ── */
+.info-box {
+  font-family: var(--rpg-font);
+  font-size: clamp(7px, 1.9vw, 9px);
+  line-height: 2;
+  color: #333;
+  background: rgba(255, 255, 255, 0.75);
+  border: 2px solid #d0d0d0;
+  border-left: 4px solid var(--rpg-red);
+  padding: 10px;
+}
+
+.stat-label {
+  font-family: var(--rpg-font);
+  font-size: 7px;
+  color: #666;
+}
+
+.stat-value {
+  font-family: var(--rpg-font);
+  font-size: 8px;
+  color: var(--rpg-ink);
+}
+
+.hp-bar {
+  height: 9px;
+  background: #d0d0d0;
+  border: 2px solid var(--rpg-frame);
+  overflow: hidden;
+}
+
+.hp-fill {
+  height: 100%;
+  background: linear-gradient(180deg, #66bb6a, #43a047);
+  transition: width 0.5s ease;
+}
+
+/* ── RPG BUTTON ── */
+.rpg-button {
+  display: inline-block;
+  font-family: var(--rpg-font);
+  font-size: 9px;
+  color: var(--rpg-ink);
+  background: var(--rpg-paper);
+  border: 3px solid var(--rpg-frame);
+  border-radius: 8px;
+  padding: 8px 14px;
+  box-shadow: inset 0 0 0 2px #fff, 0 3px 0 rgba(0, 0, 0, 0.25);
+  transition: transform 0.06s;
+  text-decoration: none;
+}
+
 .rpg-button:hover {
-  background: var(--rpg-panel-border);
-  color: white;
-  transform: scale(1.05);
-  box-shadow: 0 0 10px var(--rpg-accent-glow);
+  background: #fff;
 }
 
 .rpg-button:active {
-  transform: scale(0.95);
+  transform: translateY(2px);
+  box-shadow: inset 0 0 0 2px #fff, 0 1px 0 rgba(0, 0, 0, 0.25);
 }
 
-/* ============================================
-   GAME WORLD ANIMATIONS
-   ============================================ */
-
-/* Cloud float */
-@keyframes cloudFloat {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(30px); }
+/* ── SCROLLBAR ── */
+.rpg-scroll::-webkit-scrollbar { width: 10px; }
+.rpg-scroll::-webkit-scrollbar-track {
+  background: var(--rpg-paper-dark);
+  border-left: 2px solid var(--rpg-frame);
+}
+.rpg-scroll::-webkit-scrollbar-thumb {
+  background: var(--rpg-red);
+  border: 2px solid var(--rpg-frame);
 }
 
-@keyframes cloudFloat2 {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(-20px); }
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes cloudDrift {
+  from { transform: translateX(-15vw); }
+  to   { transform: translateX(115vw); }
 }
-
-/* Grass sway */
 @keyframes grassSway {
-  0%, 100% { transform: skewX(0deg); }
-  25% { transform: skewX(2deg); }
-  75% { transform: skewX(-2deg); }
+  0%, 100% { transform: rotate(-2deg); }
+  50%      { transform: rotate(2deg); }
 }
-
-@keyframes grassSway2 {
-  0%, 100% { transform: skewX(0deg); }
-  33% { transform: skewX(-3deg); }
-  66% { transform: skewX(3deg); }
-}
-
-/* Tree sway */
 @keyframes treeSway {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(1deg); }
+  0%, 100% { transform: rotate(-0.8deg); }
+  50%      { transform: rotate(0.8deg); }
 }
-
-/* Flower bob */
 @keyframes flowerBob {
   0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-2px) rotate(3deg); }
+  50%      { transform: translateY(-2px) rotate(4deg); }
 }
-
-/* Trainer idle */
-@keyframes trainerIdle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 1; }
 }
-
-@keyframes trainerBreathe {
-  0%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(1.02); }
+@keyframes moonGlow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(255,249,196,0.4)); }
+  50%      { filter: drop-shadow(0 0 18px rgba(255,249,196,0.7)); }
 }
-
-/* Arrow bounce */
-@keyframes arrowBounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+@keyframes particleFloat {
+  0%   { transform: translateY(0); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateY(-60px); opacity: 0; }
 }
-
-@keyframes arrowGlow {
-  0%, 100% { box-shadow: 0 0 5px var(--rpg-gold); }
-  50% { box-shadow: 0 0 20px var(--rpg-gold), 0 0 30px rgba(251, 191, 36, 0.5); }
+@keyframes birdFly {
+  0%   { transform: translateX(-8vw) translateY(0); }
+  25%  { transform: translateX(28vw) translateY(-14px); }
+  50%  { transform: translateX(55vw) translateY(6px); }
+  75%  { transform: translateX(82vw) translateY(-10px); }
+  100% { transform: translateX(115vw) translateY(0); }
 }
-
-/* Cursor blink */
+@keyframes birdFlyReverse {
+  0%   { transform: translateX(115vw) translateY(0) scaleX(-1); }
+  25%  { transform: translateX(82vw) translateY(-12px) scaleX(-1); }
+  50%  { transform: translateX(55vw) translateY(8px) scaleX(-1); }
+  75%  { transform: translateX(28vw) translateY(-10px) scaleX(-1); }
+  100% { transform: translateX(-8vw) translateY(0) scaleX(-1); }
+}
 @keyframes cursorBlink {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  50%      { opacity: 0; }
 }
-
-/* Panel slide in */
-@keyframes panelSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+@keyframes bobDown {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(3px); }
 }
-
-@keyframes panelSlideDown {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
+@keyframes trainerIdle {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-2px); }
 }
-
-/* Fade in */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@keyframes trainerHop {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
 }
-
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+@keyframes arrowBounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
 }
-
-/* Star twinkle */
-@keyframes twinkle {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
+@keyframes pulseSoft {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
 }
-
-/* Moon glow */
-@keyframes moonGlow {
-  0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 255, 200, 0.5)); }
-  50% { filter: drop-shadow(0 0 20px rgba(255, 255, 200, 0.8)); }
-}
-
-/* Particle float */
-@keyframes particleFloat {
-  0% { transform: translateY(0) translateX(0); opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { transform: translateY(-100px) translateX(20px); opacity: 0; }
-}
-
-/* Selection flash */
-@keyframes selectFlash {
-  0% { background: transparent; }
-  50% { background: rgba(233, 69, 96, 0.3); }
-  100% { background: transparent; }
-}
-
-/* Badge unlock */
 @keyframes badgeUnlock {
-  0% { transform: scale(0) rotate(-180deg); opacity: 0; }
-  60% { transform: scale(1.2) rotate(10deg); opacity: 1; }
-  80% { transform: scale(0.9) rotate(-5deg); }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  0%   { transform: scale(0.3) rotate(-20deg); opacity: 0; }
+  60%  { transform: scale(1.15) rotate(6deg); opacity: 1; }
+  80%  { transform: scale(0.95) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes titleGlow {
+  0%, 100% { text-shadow: 3px 3px 0 var(--rpg-red-dark), 0 0 18px rgba(232,83,79,0.4); }
+  50%      { text-shadow: 3px 3px 0 var(--rpg-red-dark), 0 0 32px rgba(232,83,79,0.75); }
+}
+@keyframes scanlineMove {
+  from { background-position: 0 0; }
+  to   { background-position: 0 8px; }
 }
 
-/* Shimmer effect */
-@keyframes shimmer {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
+/* CRT scanlines overlay (subtle, adds retro feel) */
+.crt-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.04) 0px,
+    rgba(0, 0, 0, 0.04) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  z-index: 80;
+  mix-blend-mode: multiply;
 }
 
-/* Bird fly */
-@keyframes birdFly {
-  0% { transform: translateX(-100px) translateY(0); }
-  25% { transform: translateX(25vw) translateY(-20px); }
-  50% { transform: translateX(50vw) translateY(10px); }
-  75% { transform: translateX(75vw) translateY(-15px); }
-  100% { transform: translateX(110vw) translateY(5px); }
-}
-
-/* ============================================
-   SCROLLBAR
-   ============================================ */
-.rpg-scroll::-webkit-scrollbar {
-  width: 12px;
-}
-
-.rpg-scroll::-webkit-scrollbar-track {
-  background: var(--rpg-bg-dark);
-  border: 2px solid var(--rpg-panel-border);
-}
-
-.rpg-scroll::-webkit-scrollbar-thumb {
-  background: var(--rpg-panel-border);
-  border: 2px solid var(--rpg-bg-dark);
-}
-
-.rpg-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--rpg-accent-glow);
-}
-
-/* ============================================
+/* ============================================================
    REDUCED MOTION
-   ============================================ */
+   ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

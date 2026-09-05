@@ -2,207 +2,64 @@ import React from "react";
 import { quests } from "@/data";
 
 export const QuestsSection: React.FC = () => {
-  const activeQuests = quests.filter((q) => q.status === "active");
-  const completedQuests = quests.filter((q) => q.status === "completed");
-  const lockedQuests = quests.filter((q) => q.status === "locked");
+  const active = quests.filter((q) => q.status === "active");
+  const done = quests.filter((q) => q.status === "completed");
+  const locked = quests.filter((q) => q.status === "locked");
 
-  return (
-    <div className="p-4 md:p-6 h-full overflow-y-auto rpg-scroll">
-      {/* Header */}
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-xl">📜</span>
-        <div
-          style={{
-            fontFamily: "var(--rpg-font)",
-            fontSize: "14px",
-            color: "var(--rpg-gold)",
-            textShadow: "0 0 10px rgba(251, 191, 36, 0.5)",
-          }}
-        >
-          QUESTS
+  const Group: React.FC<{ title: string; color: string; items: typeof quests; dim?: boolean }> = ({
+    title, color, items, dim,
+  }) =>
+    items.length === 0 ? null : (
+      <div className="mb-5">
+        <div className="section-heading" style={{ color }}>
+          {title}
+        </div>
+        <div className="space-y-2">
+          {items.map((q) => (
+            <div
+              key={q.id}
+              className="p-3"
+              style={{
+                background: "rgba(255,255,255,0.6)",
+                border: `3px solid ${color}66`,
+                opacity: dim ? 0.5 : 1,
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <span style={{ color, fontSize: 9 }}>
+                  {q.status === "completed" ? "✓" : q.status === "locked" ? "🔒" : "●"}
+                </span>
+                <span style={{ fontFamily: "var(--rpg-font)", fontSize: "clamp(8px,2vw,10px)", color: "#222" }}>
+                  {q.name}
+                </span>
+              </div>
+              <p className="stat-label mt-2" style={{ color: "#777", lineHeight: 1.8 }}>
+                {q.description}
+              </p>
+              {q.progress !== undefined && q.status === "active" && (
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="hp-bar flex-1" style={{ height: 7 }}>
+                    <div
+                      className="hp-fill"
+                      style={{ width: `${q.progress}%`, background: "linear-gradient(90deg, #66bb6a, #43a047)" }}
+                    />
+                  </div>
+                  <span className="stat-label" style={{ color: color, fontSize: 6 }}>{q.progress}%</span>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
+    );
 
-      <div
-        className="mb-4"
-        style={{
-          height: "3px",
-          background: "linear-gradient(90deg, var(--rpg-accent), var(--rpg-gold), var(--rpg-accent))",
-        }}
-      />
-
-      {/* Active Quests */}
-      {activeQuests.length > 0 && (
-        <div className="mb-4">
-          <div
-            className="flex items-center gap-2 mb-3"
-            style={{
-              fontFamily: "var(--rpg-font)",
-              fontSize: "8px",
-              color: "var(--rpg-green)",
-            }}
-          >
-            <span>●</span> ACTIVE QUESTS
-          </div>
-          <div className="space-y-2">
-            {activeQuests.map((quest) => (
-              <div
-                key={quest.id}
-                className="p-3"
-                style={{
-                  background: "rgba(74, 222, 128, 0.05)",
-                  border: "2px solid rgba(74, 222, 128, 0.2)",
-                }}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <span
-                    style={{
-                      fontFamily: "var(--rpg-font)",
-                      fontSize: "9px",
-                      color: "var(--rpg-text)",
-                    }}
-                  >
-                    {quest.name}
-                  </span>
-                </div>
-                <div
-                  className="mb-2"
-                  style={{
-                    fontFamily: "var(--rpg-font)",
-                    fontSize: "6px",
-                    color: "var(--rpg-text-dim)",
-                    lineHeight: "1.6",
-                  }}
-                >
-                  {quest.description}
-                </div>
-                {/* Progress bar */}
-                {quest.progress !== undefined && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-[6px] bg-black/30 relative overflow-hidden">
-                      <div
-                        className="h-full transition-all duration-500"
-                        style={{
-                          width: `${quest.progress}%`,
-                          background: "linear-gradient(90deg, var(--rpg-green), #22c55e)",
-                        }}
-                      />
-                    </div>
-                    <span
-                      style={{
-                        fontFamily: "var(--rpg-font)",
-                        fontSize: "6px",
-                        color: "var(--rpg-green)",
-                      }}
-                    >
-                      {quest.progress}%
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Completed Quests */}
-      {completedQuests.length > 0 && (
-        <div className="mb-4">
-          <div
-            className="flex items-center gap-2 mb-3"
-            style={{
-              fontFamily: "var(--rpg-font)",
-              fontSize: "8px",
-              color: "var(--rpg-blue)",
-            }}
-          >
-            <span>✓</span> COMPLETED
-          </div>
-          <div className="space-y-2">
-            {completedQuests.map((quest) => (
-              <div
-                key={quest.id}
-                className="p-3"
-                style={{
-                  background: "rgba(96, 165, 250, 0.05)",
-                  border: "2px solid rgba(96, 165, 250, 0.2)",
-                  opacity: 0.7,
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: "var(--rpg-font)",
-                    fontSize: "9px",
-                    color: "var(--rpg-text)",
-                  }}
-                >
-                  {quest.name}
-                </div>
-                <div
-                  className="mt-1"
-                  style={{
-                    fontFamily: "var(--rpg-font)",
-                    fontSize: "6px",
-                    color: "var(--rpg-text-dim)",
-                    lineHeight: "1.6",
-                  }}
-                >
-                  {quest.description}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Locked Quests */}
-      {lockedQuests.length > 0 && (
-        <div>
-          <div
-            className="flex items-center gap-2 mb-3"
-            style={{
-              fontFamily: "var(--rpg-font)",
-              fontSize: "8px",
-              color: "var(--rpg-text-dim)",
-            }}
-          >
-            <span>🔒</span> LOCKED
-          </div>
-          <div className="space-y-2">
-            {lockedQuests.map((quest) => (
-              <div
-                key={quest.id}
-                className="p-3"
-                style={{
-                  background: "rgba(255,255,255,0.02)",
-                  border: "2px solid rgba(255,255,255,0.06)",
-                  opacity: 0.4,
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: "var(--rpg-font)",
-                    fontSize: "9px",
-                    color: "var(--rpg-text-dim)",
-                  }}
-                >
-                  {quest.name}
-                </div>
-                <div
-                  className="mt-1"
-                  style={{
-                    fontFamily: "var(--rpg-font)",
-                    fontSize: "6px",
-                    color: "var(--rpg-text-dim)",
-                  }}
-                >
-                  {quest.description}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+  return (
+    <div className="h-full overflow-y-auto rpg-scroll p-4 md:p-6">
+      <div className="max-w-2xl mx-auto">
+        <Group title="ACTIVE QUESTS" color="#43a047" items={active} />
+        <Group title="COMPLETED" color="#5c6bc0" items={done} />
+        <Group title="LOCKED" color="#9e9e9e" items={locked} dim />
+      </div>
     </div>
   );
 };

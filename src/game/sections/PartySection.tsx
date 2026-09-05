@@ -1,217 +1,89 @@
 import React, { useState } from "react";
 import { party, type PartyMember } from "@/data";
+import { PixelSprite } from "../PixelSprite";
+import { creatureSprite } from "../sprites";
 
 export const PartySection: React.FC = () => {
-  const [selected, setSelected] = useState<PartyMember | null>(null);
+  const [selected, setSelected] = useState<PartyMember>(party[0]);
 
   return (
-    <div className="p-4 md:p-6 h-full overflow-y-auto rpg-scroll">
-      {/* Header */}
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-xl">⚔️</span>
-        <div
-          style={{
-            fontFamily: "var(--rpg-font)",
-            fontSize: "14px",
-            color: "var(--rpg-gold)",
-            textShadow: "0 0 10px rgba(251, 191, 36, 0.5)",
-          }}
-        >
-          PARTY
-        </div>
-        <div
-          className="ml-auto"
-          style={{
-            fontFamily: "var(--rpg-font)",
-            fontSize: "7px",
-            color: "var(--rpg-text-dim)",
-          }}
-        >
-          {party.length} MEMBERS
-        </div>
-      </div>
-
-      <div
-        className="mb-4"
-        style={{
-          height: "3px",
-          background: "linear-gradient(90deg, var(--rpg-accent), var(--rpg-gold), var(--rpg-accent))",
-        }}
-      />
-
-      <div className="flex flex-col md:flex-row gap-4">
-        {/* Party List */}
-        <div className="flex-1 space-y-2">
-          {party.map((member) => (
-            <button
-              key={member.id}
-              onClick={() => setSelected(member)}
-              className="w-full text-left p-3 transition-all duration-100"
-              style={{
-                background:
-                  selected?.id === member.id
-                    ? "rgba(233, 69, 96, 0.2)"
-                    : "rgba(255,255,255,0.03)",
-                border: `2px solid ${
-                  selected?.id === member.id ? "var(--rpg-accent)" : "rgba(255,255,255,0.08)"
-                }`,
-              }}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-10 h-10 flex items-center justify-center text-xl"
-                  style={{
-                    background: member.color + "33",
-                    border: `2px solid ${member.color}`,
-                  }}
-                >
-                  {member.icon}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span
-                      style={{
-                        fontFamily: "var(--rpg-font)",
-                        fontSize: "9px",
-                        color: "var(--rpg-text)",
-                      }}
-                    >
-                      {member.name}
-                    </span>
-                    <span
-                      className="px-1"
-                      style={{
-                        fontFamily: "var(--rpg-font)",
-                        fontSize: "6px",
-                        color: member.color,
-                        background: member.color + "22",
-                        border: `1px solid ${member.color}66`,
-                      }}
-                    >
-                      {member.type}
-                    </span>
-                  </div>
-                  {/* Level bar */}
-                  <div className="flex items-center gap-2 mt-1">
-                    <span
-                      style={{
-                        fontFamily: "var(--rpg-font)",
-                        fontSize: "6px",
-                        color: "var(--rpg-text-dim)",
-                      }}
-                    >
-                      LV
-                    </span>
-                    <div className="flex-1 h-[6px] bg-black/30 relative overflow-hidden">
-                      <div
-                        className="h-full transition-all duration-500"
-                        style={{
-                          width: `${member.level}%`,
-                          background: `linear-gradient(90deg, ${member.color}, ${member.color}cc)`,
-                        }}
-                      />
-                    </div>
-                    <span
-                      style={{
-                        fontFamily: "var(--rpg-font)",
-                        fontSize: "6px",
-                        color: "var(--rpg-green)",
-                      }}
-                    >
-                      {member.level}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* Detail panel */}
-        {selected && (
-          <div
-            className="flex-1 p-4"
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "2px solid rgba(233, 69, 96, 0.3)",
-            }}
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div
-                className="w-12 h-12 flex items-center justify-center text-2xl"
+    <div className="h-full overflow-y-auto rpg-scroll p-3 md:p-6">
+      <div className="max-w-4xl mx-auto grid md:grid-cols-[1fr_1fr] gap-4">
+        {/* roster */}
+        <div className="space-y-2">
+          {party.map((m) => {
+            const sel = selected.id === m.id;
+            return (
+              <button
+                key={m.id}
+                onClick={() => { setSelected(m); sfx("menuMove"); }}
+                className="w-full flex items-center gap-3 p-2.5 md:p-3 text-left transition-colors min-h-[56px]"
                 style={{
-                  background: selected.color + "33",
-                  border: `3px solid ${selected.color}`,
+                  background: sel ? "rgba(233,69,96,0.08)" : "rgba(255,255,255,0.5)",
+                  border: `3px solid ${sel ? "var(--rpg-red)" : "#d8d8d8"}`,
+                  boxShadow: sel ? "0 0 0 1px var(--rpg-red), 0 2px 0 rgba(0,0,0,0.1)" : "0 2px 0 rgba(0,0,0,0.06)",
                 }}
               >
-                {selected.icon}
-              </div>
-              <div>
+                <span style={{ color: "var(--rpg-red)", fontSize: 11, opacity: sel ? 1 : 0 }}>▶</span>
                 <div
+                  className="shrink-0 flex items-center justify-center"
                   style={{
-                    fontFamily: "var(--rpg-font)",
-                    fontSize: "12px",
-                    color: "var(--rpg-text)",
+                    width: 44, height: 44,
+                    background: `${m.color}22`,
+                    border: `2px solid ${m.color}`,
                   }}
                 >
-                  {selected.name}
+                  <PixelSprite sprite={creatureSprite} scale={2.4} />
                 </div>
-                <div
-                  style={{
-                    fontFamily: "var(--rpg-font)",
-                    fontSize: "7px",
-                    color: selected.color,
-                  }}
-                >
-                  {selected.type} TYPE · LV {selected.level}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span style={{ fontFamily: "var(--rpg-font)", fontSize: "clamp(8px,2vw,10px)" }}>{m.name}</span>
+                    <span className="type-chip" style={{ borderColor: m.color, color: m.color, fontSize: 5 }}>{m.type}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <span className="stat-label" style={{ fontSize: 6 }}>Lv{m.level}</span>
+                    <div className="hp-bar flex-1" style={{ height: 7 }}>
+                      <div className="hp-fill" style={{ width: `${m.level}%`, background: m.color }} />
+                    </div>
+                  </div>
                 </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* detail */}
+        <div className="panel-frame p-4 self-start md:sticky md:top-0">
+          <div className="flex items-center gap-3 mb-3">
+            <div
+              className="shrink-0 flex items-center justify-center"
+              style={{ width: 64, height: 64, background: `${selected.color}22`, border: `3px solid ${selected.color}` }}
+            >
+              <PixelSprite sprite={creatureSprite} scale={3.4} />
+            </div>
+            <div>
+              <div className="panel-title" style={{ fontSize: "clamp(11px,2.5vw,14px)" }}>{selected.name}</div>
+              <div className="stat-label" style={{ color: selected.color, marginTop: 4 }}>
+                {selected.type} · Lv {selected.level}
               </div>
-            </div>
-
-            <div
-              className="mb-3 p-2"
-              style={{
-                fontFamily: "var(--rpg-font)",
-                fontSize: "7px",
-                color: "var(--rpg-text)",
-                lineHeight: "1.8",
-                background: "rgba(0,0,0,0.2)",
-                borderLeft: `3px solid ${selected.color}`,
-              }}
-            >
-              {selected.description}
-            </div>
-
-            <div
-              style={{
-                fontFamily: "var(--rpg-font)",
-                fontSize: "7px",
-                color: "var(--rpg-accent)",
-                marginBottom: "4px",
-              }}
-            >
-              TECHNIQUES
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {selected.technologies.map((tech) => (
-                <span
-                  key={tech}
-                  className="px-2 py-1"
-                  style={{
-                    fontFamily: "var(--rpg-font)",
-                    fontSize: "6px",
-                    color: "var(--rpg-text)",
-                    background: "rgba(255,255,255,0.08)",
-                    border: "1px solid rgba(255,255,255,0.15)",
-                  }}
-                >
-                  {tech}
-                </span>
-              ))}
             </div>
           </div>
-        )}
+
+          <div className="info-box mb-3">{selected.description}</div>
+
+          <div className="section-heading">TECHNIQUES</div>
+          <div className="flex flex-wrap gap-1.5">
+            {selected.technologies.map((t) => (
+              <span key={t} className="type-chip" style={{ borderColor: "#9e9e9e", color: "#555" }}>{t}</span>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
 };
+
+/* tiny sfx helper (avoids importing whole module names) */
+function sfx(name: "menuMove") {
+  import("../sfx").then(({ sfx: engine }) => engine.play(name));
+}

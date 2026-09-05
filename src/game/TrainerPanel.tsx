@@ -1,106 +1,89 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trainer } from "@/data";
+import { PixelSprite } from "./PixelSprite";
+import { trainerSprite } from "./sprites";
+import { sfx } from "./sfx";
 
-interface TrainerPanelProps {
-  isOpen: boolean;
-}
+export const TrainerPanel: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
+  const [soundOn, setSoundOn] = React.useState(sfx.enabled);
 
-export const TrainerPanel: React.FC<TrainerPanelProps> = ({ isOpen }) => {
+  const toggleSound = () => {
+    sfx.enabled = !sfx.enabled;
+    if (sfx.enabled) sfx.play("menuSelect");
+    setSoundOn(sfx.enabled);
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ opacity: 0, x: -30, scale: 0.95 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={{ opacity: 0, x: -30, scale: 0.95 }}
+          initial={{ opacity: 0, x: -24 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -24 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className="absolute left-4 bottom-20 md:left-8 md:bottom-24 z-20"
+          className="absolute left-2 top-14 z-30 md:left-6 md:top-20 w-[132px] md:w-[180px]"
         >
-          <div
-            className="pixel-border relative"
-            style={{
-              background: "linear-gradient(180deg, #0f3460 0%, #1a1a2e 100%)",
-              padding: "12px 16px",
-              minWidth: "200px",
-              maxWidth: "240px",
-            }}
-          >
-            {/* Decorative top */}
-            <div
-              className="absolute top-0 left-0 right-0 h-[3px]"
-              style={{
-                background: "linear-gradient(90deg, var(--rpg-gold), transparent)",
-              }}
-            />
-
-            {/* Name */}
-            <div
-              style={{
-                fontFamily: "var(--rpg-font)",
-                fontSize: "14px",
-                color: "var(--rpg-gold)",
-                marginBottom: "4px",
-                textShadow: "0 0 8px rgba(251, 191, 36, 0.5)",
-              }}
-            >
-              {trainer.name}
+          <div className="panel-frame p-2.5 md:p-3">
+            {/* portrait + name */}
+            <div className="flex items-center gap-2 mb-2">
+              <div className="portrait-box shrink-0">
+                <PixelSprite sprite={trainerSprite} scale={2.5} />
+              </div>
+              <div className="min-w-0">
+                <div className="panel-title" style={{ fontSize: 9 }}>{trainer.name}</div>
+                <div
+                  style={{ fontFamily: "var(--rpg-font)", fontSize: 6, color: "var(--rpg-red)" }}
+                >
+                  {trainer.class}
+                </div>
+              </div>
+              <button
+                onClick={toggleSound}
+                className="ml-auto panel-chip text-[8px] px-1.5 py-1 shrink-0"
+                style={{ fontFamily: "var(--rpg-font)" }}
+                aria-label={soundOn ? "Mute sound" : "Enable sound"}
+                title="Toggle sound (M)"
+              >
+                {soundOn ? "♪" : "×"}
+              </button>
             </div>
 
-            {/* Class */}
+            <div className="panel-sep" />
+
             <div
-              style={{
-                fontFamily: "var(--rpg-font)",
-                fontSize: "8px",
-                color: "var(--rpg-accent)",
-                marginBottom: "8px",
-              }}
+              className="text-[6px] leading-relaxed"
+              style={{ fontFamily: "var(--rpg-font)", color: "#4a4a4a" }}
             >
-              {trainer.class}
+              {trainer.specialty.join(" · ")}
             </div>
 
-            {/* Separator */}
-            <div
-              className="mb-2"
-              style={{
-                height: "2px",
-                background: "linear-gradient(90deg, var(--rpg-panel-border), transparent)",
-              }}
-            />
-
-            {/* Specialty */}
-            <div
-              style={{
-                fontFamily: "var(--rpg-font)",
-                fontSize: "7px",
-                color: "var(--rpg-text-dim)",
-                lineHeight: "1.6",
-                marginBottom: "6px",
-              }}
-            >
-              {trainer.specialty.join(" • ")}
-            </div>
-
-            {/* Description */}
-            <div
-              style={{
-                fontFamily: "var(--rpg-font)",
-                fontSize: "6px",
-                color: "var(--rpg-text)",
-                lineHeight: "1.8",
-                opacity: 0.8,
-              }}
+            <p
+              className="mt-2 text-[6px] leading-loose"
+              style={{ fontFamily: "var(--rpg-font)", color: "#6a6a6a" }}
             >
               {trainer.description}
+            </p>
+
+            {/* HP-style level bar */}
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="stat-label">HP</span>
+                <span className="stat-label" style={{ color: "var(--rpg-green)" }}>
+                  Lv {trainer.stats.level}
+                </span>
+              </div>
+              <div className="hp-bar">
+                <div className="hp-fill" style={{ width: "78%" }} />
+              </div>
             </div>
 
-            {/* Decorative bottom */}
             <div
-              className="absolute bottom-0 left-0 right-0 h-[2px]"
-              style={{
-                background: "linear-gradient(90deg, var(--rpg-accent), transparent)",
-              }}
-            />
+              className="mt-2 text-[5px] text-right hidden md:block"
+              style={{ fontFamily: "var(--rpg-font)", color: "#9a9a9a" }}
+            >
+              PRESS M FOR SOUND
+            </div>
           </div>
         </motion.div>
       )}

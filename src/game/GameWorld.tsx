@@ -5,412 +5,443 @@ interface GameWorldProps {
   dimmed: boolean;
 }
 
-/* ── Sky gradient based on time of day ── */
-const skyGradients: Record<string, string> = {
-  day: "linear-gradient(180deg, #87CEEB 0%, #B0E0FF 40%, #E8F4FD 70%, #C8E6C9 100%)",
-  evening: "linear-gradient(180deg, #2D1B69 0%, #E65100 30%, #FF8F00 50%, #FFE0B2 80%, #A5D6A7 100%)",
-  night: "linear-gradient(180deg, #0D0221 0%, #1A0A3E 30%, #1B2845 60%, #1a3a2a 100%)",
+/* ── GBA-inspired palette ── */
+const pal = {
+  day: {
+    skyTop: "#7EC0EE",
+    skyMid: "#A8D8F0",
+    skyLow: "#D6F0FA",
+    haze: "#EAF7FD",
+    mtnFar: "#A5C4D4",
+    mtnNear: "#7FA8C2",
+    fieldFar: "#9CCB86",
+    fieldMid: "#7DBE6B",
+    fieldNear: "#5FAF52",
+    grassLight: "#8FD47E",
+    grassDark: "#4E9E44",
+    treeDark: "#2F7A3D",
+    tree: "#3E9B4F",
+    treeLight: "#5CBA6A",
+    trunk: "#7A5236",
+    path: "#D9B98A",
+    pathDark: "#C4A274",
+    cloud: "#FFFFFF",
+  },
+  evening: {
+    skyTop: "#3D2E6B",
+    skyMid: "#B3574E",
+    skyLow: "#F0A05A",
+    haze: "#F7C983",
+    mtnFar: "#8A6A8E",
+    mtnNear: "#6B4E7A",
+    fieldFar: "#8FA86B",
+    fieldMid: "#6E955C",
+    fieldNear: "#55804A",
+    grassLight: "#93B571",
+    grassDark: "#4E7A44",
+    treeDark: "#3A6540",
+    tree: "#4A7A4E",
+    treeLight: "#63966072",
+    trunk: "#6B4632",
+    path: "#C7A17A",
+    pathDark: "#A98763",
+    cloud: "#F5C9A8",
+  },
+  night: {
+    skyTop: "#0A0E2A",
+    skyMid: "#131A3E",
+    skyLow: "#1D2A50",
+    haze: "#26365E",
+    mtnFar: "#2A3860",
+    mtnNear: "#22304E",
+    fieldFar: "#2E5540",
+    fieldMid: "#274836",
+    fieldNear: "#1F3A2C",
+    grassLight: "#3B6B4A",
+    grassDark: "#2A5238",
+    treeDark: "#1E3D2C",
+    tree: "#265036",
+    treeLight: "#2F6342",
+    trunk: "#3A2E28",
+    path: "#6E6154",
+    pathDark: "#5A4E44",
+    cloud: "#39456B",
+  },
 };
 
-/* ── Cloud component ── */
+/* ── Pixel cloud ── */
 const Cloud: React.FC<{
-  x: number;
-  y: number;
-  scale: number;
-  delay: number;
-  duration: number;
-}> = ({ x, y, scale, delay, duration }) => (
+  x: number; y: number; scale: number; dur: number; delay: number; color: string;
+}> = ({ x, y, scale, dur, delay, color }) => (
   <div
-    className="absolute pointer-events-none"
+    className="absolute will-change-transform"
     style={{
-      left: `${x}%`,
-      top: `${y}%`,
-      transform: `scale(${scale})`,
-      animation: `cloudFloat ${duration}s ease-in-out ${delay}s infinite`,
+      left: `${x}%`, top: `${y}%`, transform: `scale(${scale})`,
+      animation: `cloudDrift ${dur}s linear ${delay}s infinite`,
+      imageRendering: "pixelated",
     }}
   >
-    {/* Pixel cloud built from divs */}
-    <div className="relative">
-      <div className="w-16 h-4 bg-white/90 rounded-sm" />
-      <div className="absolute -top-2 left-2 w-10 h-4 bg-white/90 rounded-sm" />
-      <div className="absolute -top-1 left-6 w-6 h-3 bg-white/80 rounded-sm" />
-      <div className="absolute top-1 -left-1 w-8 h-3 bg-white/85 rounded-sm" />
+    <svg width="72" height="28" viewBox="0 0 18 7" shapeRendering="crispEdges">
+      {[[
+        "................",
+        "......ww........",
+        "....wwww.ww.....",
+        "..wwwwwwwwww....",
+        ".wwwwwwwwwwwww..",
+        "wwwwwwwwwwwwwww.",
+        "................",
+      ]].map((rows, i) => (
+        <g key={i}>
+          {rows.flatMap((row, ry) =>
+            row.split("").map((ch, rx) =>
+              ch === "w" ? (
+                <rect key={`${rx}-${ry}`} x={rx} y={ry} width={1} height={1} fill={color} />
+              ) : null
+            )
+          )}
+        </g>
+      ))}
+    </svg>
+  </div>
+);
+
+/* ── Mountain ridge (SVG polyline band) ── */
+const Ridge: React.FC<{ color: string; height: number; bottom: number; peaks: number[] }> = ({
+  color, height, bottom, peaks,
+}) => {
+  const W = 200;
+  const pts = [`0,${height}`];
+  peaks.forEach((p, i) => {
+    const x = (i * W) / (peaks.length - 1);
+    pts.push(`${x},${height - p}`);
+  });
+  pts.push(`${W},${height}`);
+  return (
+    <div className="absolute left-0 right-0" style={{ bottom: `${bottom}%`, height }}>
+      <svg
+        viewBox={`0 0 ${W} ${height}`}
+        preserveAspectRatio="none"
+        className="w-full h-full"
+        shapeRendering="crispEdges"
+      >
+        <polygon points={pts.join(" ")} fill={color} />
+      </svg>
     </div>
-  </div>
-);
+  );
+};
 
-/* ── Mountain component ── */
-const Mountain: React.FC<{
-  x: number;
-  height: number;
-  width: number;
-  color: string;
-}> = ({ x, height, width, color }) => (
-  <div
-    className="absolute bottom-[38%] pointer-events-none"
-    style={{
-      left: `${x}%`,
-      width: `${width}px`,
-      height: `${height}px`,
-    }}
-  >
-    <div
-      className="w-full h-full"
-      style={{
-        background: color,
-        clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
-      }}
-    />
-    {/* Snow cap */}
-    <div
-      className="absolute top-0 left-1/2 -translate-x-1/2"
-      style={{
-        width: `${width * 0.3}px`,
-        height: `${height * 0.15}px`,
-        background: "white",
-        clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
-      }}
-    />
-  </div>
-);
-
-/* ── Tree component ── */
+/* ── Depth-scaled oak tree (matches reference art style) ── */
 const Tree: React.FC<{
-  x: number;
-  bottom: number;
-  size: number;
-  delay: number;
-}> = ({ x, bottom, size, delay }) => (
-  <div
-    className="absolute pointer-events-none"
-    style={{
-      left: `${x}%`,
-      bottom: `${bottom}%`,
-      animation: `treeSway ${6 + delay}s ease-in-out ${delay}s infinite`,
-      transformOrigin: "bottom center",
-    }}
-  >
-    {/* Trunk */}
-    <div
-      className="mx-auto"
-      style={{
-        width: `${size * 0.2}px`,
-        height: `${size * 0.4}px`,
-        background: "#5D4037",
-        borderRadius: "2px",
-      }}
-    />
-    {/* Foliage layers */}
+  x: number; bottom: number; scale: number; delay: number; p: typeof pal.day; big?: boolean;
+}> = ({ x, bottom, scale, delay, p, big }) => {
+  const s = big ? 64 : 48;
+  const base = s * scale;
+  return (
     <div
       className="absolute"
       style={{
-        bottom: `${size * 0.3}px`,
-        left: "50%",
-        transform: "translateX(-50%)",
-        width: `${size}px`,
-        height: `${size * 0.6}px`,
-        background: "#2E7D32",
-        borderRadius: "50% 50% 10% 10%",
+        left: `${x}%`,
+        bottom: `${bottom}%`,
+        width: base,
+        height: base * 1.35,
+        transformOrigin: "50% 100%",
+        animation: `treeSway ${7 + delay * 2}s ease-in-out ${delay}s infinite`,
+        zIndex: Math.round(bottom),
       }}
-    />
-    <div
-      className="absolute"
-      style={{
-        bottom: `${size * 0.5}px`,
-        left: "50%",
-        transform: "translateX(-50%)",
-        width: `${size * 0.7}px`,
-        height: `${size * 0.4}px`,
-        background: "#388E3C",
-        borderRadius: "50%",
-      }}
-    />
-  </div>
-);
-
-/* ── Grass tuft ── */
-const GrassTuft: React.FC<{
-  x: number;
-  bottom: number;
-  delay: number;
-}> = ({ x, bottom, delay }) => (
-  <div
-    className="absolute pointer-events-none"
-    style={{
-      left: `${x}%`,
-      bottom: `${bottom}%`,
-      animation: `grassSway ${3 + delay}s ease-in-out ${delay}s infinite`,
-      transformOrigin: "bottom center",
-    }}
-  >
-    <div className="flex gap-[2px]">
-      <div className="w-[3px] h-[14px] bg-[#4CAF50] rounded-t-full" style={{ transform: "rotate(-10deg)" }} />
-      <div className="w-[3px] h-[18px] bg-[#43A047] rounded-t-full" />
-      <div className="w-[3px] h-[14px] bg-[#66BB6A] rounded-t-full" style={{ transform: "rotate(10deg)" }} />
+    >
+      <svg width="100%" height="100%" viewBox="0 0 16 22" shapeRendering="crispEdges">
+        {/* trunk */}
+        <rect x="7" y="15" width="2" height="6" fill={p.trunk} />
+        <rect x="7" y="20" width="3" height="1" fill={p.trunk} />
+        {/* foliage canopy — chunky oak blobs */}
+        <rect x="3" y="4" width="10" height="8" fill={p.treeDark} />
+        <rect x="1" y="6" width="14" height="6" fill={p.treeDark} />
+        <rect x="4" y="3" width="8" height="7" fill={p.tree} />
+        <rect x="2" y="5" width="12" height="5" fill={p.tree} />
+        <rect x="5" y="2" width="6" height="5" fill={p.treeLight} />
+        <rect x="4" y="4" width="5" height="2" fill={p.treeLight} />
+        {/* cluster highlights */}
+        <rect x="10" y="5" width="2" height="2" fill={p.treeLight} />
+        <rect x="3" y="8" width="2" height="1" fill={p.tree} />
+      </svg>
+      {/* grass shadow at base */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 rounded-[50%]"
+        style={{ bottom: -2, width: base * 0.7, height: base * 0.12, background: "rgba(0,0,0,0.18)" }}
+      />
     </div>
-  </div>
-);
+  );
+};
 
-/* ── Flower ── */
-const Flower: React.FC<{
-  x: number;
-  bottom: number;
-  color: string;
-  delay: number;
-}> = ({ x, bottom, color, delay }) => (
+/* ── Tall wild-grass tuft (reference-style grass) ── */
+const WildGrass: React.FC<{ x: number; bottom: number; scale: number; delay: number; p: typeof pal.day }> = ({
+  x, bottom, scale, delay, p,
+}) => {
+  const h = 26 * scale;
+  return (
+    <div
+      className="absolute"
+      style={{
+        left: `${x}%`, bottom: `${bottom}%`, height: h,
+        transformOrigin: "50% 100%",
+        animation: `grassSway ${3.4 + delay}s ease-in-out ${delay}s infinite`,
+        zIndex: Math.round(bottom),
+      }}
+    >
+      <svg width={h * 0.9} height={h} viewBox="0 0 9 13" shapeRendering="crispEdges">
+        <rect x="0" y="3" width="2" height="10" fill={p.grassDark} />
+        <rect x="3" y="0" width="2" height="13" fill={p.grassLight} />
+        <rect x="6" y="4" width="2" height="9" fill={p.grassDark} />
+        <rect x="0" y="12" width="9" height="1" fill={p.grassDark} />
+      </svg>
+    </div>
+  );
+};
+
+/* ── Tiny flower ── */
+const Flower: React.FC<{ x: number; bottom: number; color: string; delay: number }> = ({
+  x, bottom, color, delay,
+}) => (
   <div
-    className="absolute pointer-events-none"
+    className="absolute"
     style={{
-      left: `${x}%`,
-      bottom: `${bottom}%`,
-      animation: `flowerBob ${2.5 + delay}s ease-in-out ${delay}s infinite`,
+      left: `${x}%`, bottom: `${bottom}%`,
+      animation: `flowerBob ${2.6 + delay}s ease-in-out ${delay}s infinite`,
+      zIndex: Math.round(bottom),
     }}
   >
     <div className="relative">
-      {/* Stem */}
-      <div className="w-[2px] h-[8px] bg-[#4CAF50] mx-auto" />
-      {/* Petals */}
+      <div style={{ width: 2, height: 5, background: "#3E7A3E", margin: "0 auto" }} />
       <div
-        className="absolute -top-1 left-1/2 -translate-x-1/2 w-[6px] h-[6px] rounded-full"
-        style={{ background: color }}
+        className="absolute left-1/2 -translate-x-1/2"
+        style={{ top: -4, width: 5, height: 5, background: color, outline: "1px solid rgba(0,0,0,0.25)" }}
       />
     </div>
   </div>
 );
 
-/* ── Star (night) ── */
-const Star: React.FC<{
-  x: number;
-  y: number;
-  size: number;
-  delay: number;
-}> = ({ x, y, size, delay }) => (
-  <div
-    className="absolute pointer-events-none rounded-full bg-white"
-    style={{
-      left: `${x}%`,
-      top: `${y}%`,
-      width: `${size}px`,
-      height: `${size}px`,
-      animation: `twinkle ${2 + delay}s ease-in-out ${delay}s infinite`,
-    }}
-  />
-);
-
 /* ── Bird ── */
-const Bird: React.FC<{
-  y: number;
-  delay: number;
-  duration: number;
-}> = ({ y, delay, duration }) => (
+const Bird: React.FC<{ y: number; delay: number; dur: number; reverse?: boolean }> = ({
+  y, delay, dur, reverse,
+}) => (
   <div
     className="absolute pointer-events-none"
     style={{
       top: `${y}%`,
-      left: "-50px",
-      animation: `birdFly ${duration}s linear ${delay}s infinite`,
+      animation: `${reverse ? "birdFlyReverse" : "birdFly"} ${dur}s linear ${delay}s infinite`,
+      zIndex: 40,
     }}
   >
-    <div className="text-[10px] text-gray-800 opacity-60">〰</div>
+    <svg width="18" height="8" viewBox="0 0 9 4" shapeRendering="crispEdges">
+      <rect x="0" y="1" width="3" height="1" fill="#333" />
+      <rect x="5" y="1" width="3" height="1" fill="#333" />
+      <rect x="3" y="0" width="2" height="1" fill="#333" />
+    </svg>
   </div>
 );
 
-/* ── Particle ── */
-const Particle: React.FC<{
-  x: number;
-  y: number;
-  delay: number;
-}> = ({ x, y, delay }) => (
+/* ── Fireflies (night only) ── */
+const Firefly: React.FC<{ x: number; y: number; delay: number }> = ({ x, y, delay }) => (
   <div
-    className="absolute pointer-events-none rounded-full"
+    className="absolute rounded-full pointer-events-none"
     style={{
-      left: `${x}%`,
-      bottom: `${y}%`,
-      width: "3px",
-      height: "3px",
-      background: "rgba(255,255,200,0.7)",
-      animation: `particleFloat ${5 + delay}s ease-in-out ${delay}s infinite`,
+      left: `${x}%`, top: `${y}%`, width: 4, height: 4,
+      background: "#FFE082",
+      boxShadow: "0 0 6px 2px rgba(255,224,130,0.6)",
+      animation: `particleFloat ${6 + delay}s ease-in-out ${delay}s infinite`,
+      zIndex: 45,
     }}
   />
 );
 
-/* ── Main GameWorld Component ── */
+/* ── Main component ── */
 export const GameWorld: React.FC<GameWorldProps> = ({ timeOfDay, dimmed }) => {
+  const p = pal[timeOfDay];
   const isNight = timeOfDay === "night";
-  const isEvening = timeOfDay === "evening";
+  const isDay = timeOfDay === "day";
 
-  /* Memoize random positions so they don't change on re-render */
+  /* fixed positions so no re-render flicker */
   const clouds = useMemo(
     () => [
-      { x: 5, y: 5, scale: 1, delay: 0, duration: 20 },
-      { x: 25, y: 8, scale: 0.7, delay: 3, duration: 25 },
-      { x: 55, y: 3, scale: 1.2, delay: 1, duration: 22 },
-      { x: 75, y: 10, scale: 0.8, delay: 5, duration: 28 },
-      { x: 90, y: 6, scale: 0.6, delay: 2, duration: 18 },
+      { x: -10, y: 4, scale: 1.0, dur: 70, delay: 0 },
+      { x: -10, y: 9, scale: 0.7, dur: 95, delay: 20 },
+      { x: -10, y: 2, scale: 1.3, dur: 120, delay: 45 },
+      { x: -10, y: 12, scale: 0.6, dur: 80, delay: 65 },
     ],
     []
   );
 
   const trees = useMemo(
     () => [
-      { x: 8, bottom: 32, size: 80, delay: 0 },
-      { x: 18, bottom: 30, size: 100, delay: 1 },
-      { x: 70, bottom: 31, size: 90, delay: 2 },
-      { x: 82, bottom: 29, size: 110, delay: 0.5 },
-      { x: 92, bottom: 33, size: 70, delay: 1.5 },
+      { x: 13, bottom: 38, scale: 1.6, delay: 0, big: true },
+      { x: 24, bottom: 39, scale: 1.1, delay: 1, big: false },
+      { x: 74, bottom: 38, scale: 1.0, delay: 2, big: false },
+      { x: 79, bottom: 39, scale: 1.5, delay: 0.4, big: true },
+      { x: 90, bottom: 37, scale: 1.2, delay: 1.4, big: false },
     ],
     []
   );
 
-  const grassTufts = useMemo(
+  const grass = useMemo(
     () => [
-      { x: 3, bottom: 18, delay: 0 },
-      { x: 12, bottom: 22, delay: 0.5 },
-      { x: 22, bottom: 16, delay: 1 },
-      { x: 35, bottom: 20, delay: 0.3 },
-      { x: 48, bottom: 24, delay: 0.8 },
-      { x: 58, bottom: 18, delay: 1.2 },
-      { x: 68, bottom: 22, delay: 0.2 },
-      { x: 78, bottom: 16, delay: 0.7 },
-      { x: 88, bottom: 20, delay: 1.1 },
-      { x: 95, bottom: 24, delay: 0.4 },
+      { x: 2, bottom: 16, scale: 1.6, delay: 0 },
+      { x: 7, bottom: 20, scale: 1.9, delay: 0.6 },
+      { x: 13, bottom: 14, scale: 2.2, delay: 1.1 },
+      { x: 18, bottom: 18, scale: 1.8, delay: 0.3 },
+      { x: 27, bottom: 15, scale: 2.0, delay: 0.9 },
+      { x: 33, bottom: 19, scale: 1.5, delay: 0.2 },
+      { x: 40, bottom: 13, scale: 1.7, delay: 1.3 },
+      { x: 58, bottom: 14, scale: 1.6, delay: 0.5 },
+      { x: 64, bottom: 18, scale: 2.1, delay: 1.0 },
+      { x: 70, bottom: 15, scale: 1.8, delay: 0.1 },
+      { x: 77, bottom: 19, scale: 2.3, delay: 0.8 },
+      { x: 84, bottom: 14, scale: 1.9, delay: 1.2 },
+      { x: 90, bottom: 17, scale: 1.6, delay: 0.4 },
+      { x: 95, bottom: 20, scale: 2.0, delay: 1.5 },
     ],
     []
   );
 
   const flowers = useMemo(
     () => [
-      { x: 15, bottom: 17, color: "#FF6B6B", delay: 0 },
-      { x: 30, bottom: 19, color: "#FFD93D", delay: 0.5 },
-      { x: 42, bottom: 15, color: "#C084FC", delay: 1 },
-      { x: 55, bottom: 21, color: "#FF6B6B", delay: 0.3 },
-      { x: 65, bottom: 17, color: "#60D5FA", delay: 0.8 },
-      { x: 80, bottom: 19, color: "#FFD93D", delay: 1.2 },
-      { x: 90, bottom: 16, color: "#FF6B6B", delay: 0.6 },
+      { x: 10, bottom: 22, color: "#FF8A80", delay: 0 },
+      { x: 22, bottom: 21, color: "#FFD54F", delay: 0.7 },
+      { x: 30, bottom: 23, color: "#CE93D8", delay: 1.2 },
+      { x: 44, bottom: 20, color: "#FF8A80", delay: 0.4 },
+      { x: 52, bottom: 22, color: "#81D4FA", delay: 0.9 },
+      { x: 60, bottom: 21, color: "#FFD54F", delay: 1.4 },
+      { x: 72, bottom: 23, color: "#FF8A80", delay: 0.6 },
+      { x: 86, bottom: 21, color: "#CE93D8", delay: 1.1 },
+      { x: 93, bottom: 22, color: "#FFD54F", delay: 0.3 },
     ],
     []
   );
 
   const stars = useMemo(
     () =>
-      Array.from({ length: 30 }, (_, i) => ({
-        x: Math.random() * 100,
-        y: Math.random() * 35,
-        size: Math.random() * 2 + 1,
-        delay: Math.random() * 3,
+      Array.from({ length: 40 }, (_, i) => ({
+        x: (i * 37 + 11) % 100,
+        y: (i * 23 + 7) % 32,
+        size: (i % 3) + 1,
+        delay: (i % 7) * 0.4,
       })),
     []
   );
 
   return (
     <div
-      className="absolute inset-0 overflow-hidden transition-all duration-1000"
-      style={{
-        background: skyGradients[timeOfDay],
-      }}
+      className="absolute inset-0 overflow-hidden"
+      style={{ background: `linear-gradient(180deg, ${p.skyTop} 0%, ${p.skyMid} 35%, ${p.skyLow} 62%, ${p.haze} 100%)` }}
     >
-      {/* Dimming overlay */}
-      <div
-        className="absolute inset-0 transition-opacity duration-500 pointer-events-none z-10"
-        style={{
-          opacity: dimmed ? 0.5 : 0,
-          background: "rgba(0,0,0,0.5)",
-        }}
-      />
-
-      {/* ── STARS (night only) ── */}
+      {/* stars */}
       {isNight &&
         stars.map((s, i) => (
-          <Star key={`star-${i}`} {...s} />
+          <div
+            key={`st-${i}`}
+            className="absolute rounded-full bg-white"
+            style={{
+              left: `${s.x}%`, top: `${s.y}%`, width: s.size, height: s.size,
+              animation: `twinkle ${2.2 + s.delay}s ease-in-out ${s.delay}s infinite`,
+            }}
+          />
         ))}
 
-      {/* ── MOON (night) ── */}
-      {isNight && (
-        <div
-          className="absolute top-[8%] right-[15%] pointer-events-none"
-          style={{ animation: "moonGlow 4s ease-in-out infinite" }}
-        >
-          <div className="w-16 h-16 rounded-full bg-[#FFFDE7] relative">
-            <div className="absolute top-1 right-2 w-5 h-5 rounded-full bg-[#FFF9C4]" />
-            <div className="absolute bottom-3 left-3 w-3 h-3 rounded-full bg-[#FFF9C4]" />
-          </div>
+      {/* moon / sun */}
+      {isNight ? (
+        <div className="absolute" style={{ top: "8%", right: "14%", animation: "moonGlow 5s ease-in-out infinite" }}>
+          <svg width="56" height="56" viewBox="0 0 14 14" shapeRendering="crispEdges">
+            <rect x="3" y="1" width="8" height="1" fill="#FFF9C4" />
+            <rect x="2" y="2" width="10" height="10" fill="#FFF9C4" />
+            <rect x="1" y="3" width="12" height="8" fill="#FFF9C4" />
+            <rect x="3" y="12" width="8" height="1" fill="#FFF9C4" />
+            <rect x="5" y="4" width="2" height="2" fill="#F0EFA5" />
+            <rect x="8" y="8" width="3" height="2" fill="#F0EFA5" />
+            <rect x="4" y="9" width="2" height="1" fill="#F0EFA5" />
+          </svg>
+        </div>
+      ) : (
+        <div className="absolute" style={{ top: "9%", right: "16%" }}>
+          <div
+            style={{
+              width: 40, height: 40, borderRadius: "50%",
+              background: timeOfDay === "day" ? "#FFF59D" : "#FFCC80",
+              boxShadow: `0 0 40px 10px ${timeOfDay === "day" ? "rgba(255,245,157,0.5)" : "rgba(255,204,128,0.4)"}`,
+            }}
+          />
         </div>
       )}
 
-      {/* ── CLOUDS ── */}
-      {!isNight &&
-        clouds.map((c, i) => (
-          <Cloud key={`cloud-${i}`} {...c} />
-        ))}
+      {/* clouds */}
+      {!isNight && clouds.map((c, i) => <Cloud key={`cl-${i}`} {...c} color={p.cloud} />)}
 
-      {/* ── MOUNTAINS ── */}
-      <Mountain x={5} height={120} width={200} color={isNight ? "#1B3040" : isEvening ? "#5D4037" : "#78909C"} />
-      <Mountain x={20} height={160} width={250} color={isNight ? "#152535" : isEvening ? "#4E342E" : "#607D8B"} />
-      <Mountain x={50} height={100} width={180} color={isNight ? "#1A2D40" : isEvening ? "#6D4C41" : "#78909C"} />
-      <Mountain x={70} height={140} width={220} color={isNight ? "#172838" : isEvening ? "#5D4037" : "#607D8B"} />
-      <Mountain x={88} height={90} width={160} color={isNight ? "#1C2F42" : isEvening ? "#4E342E" : "#90A4AE"} />
+      {/* mountain ridges */}
+      <Ridge color={p.mtnFar} height={90} bottom={30} peaks={[28, 44, 34, 52, 38, 60, 42, 30, 48]} />
+      <Ridge color={p.mtnNear} height={70} bottom={31} peaks={[20, 36, 26, 44, 30, 50, 34, 24, 40]} />
 
-      {/* ── GROUND ── */}
+      {/* distant field band */}
+      <div className="absolute left-0 right-0" style={{ bottom: "22%", height: "22%", background: p.fieldFar }} />
+      <div className="absolute left-0 right-0" style={{ bottom: "16%", height: "8%", background: p.fieldMid }} />
+
+      {/* ground */}
       <div
-        className="absolute bottom-0 left-0 right-0 pointer-events-none"
-        style={{ height: "35%" }}
-      >
-        {/* Main grass */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: isNight
-              ? "linear-gradient(180deg, #1B5E20 0%, #0D3311 50%, #0A2A0B 100%)"
-              : isEvening
-              ? "linear-gradient(180deg, #33691E 0%, #1B5E20 50%, #0D3311 100%)"
-              : "linear-gradient(180deg, #66BB6A 0%, #4CAF50 30%, #388E3C 60%, #2E7D32 100%)",
-          }}
-        />
-        {/* Dirt path */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2"
-          style={{
-            bottom: "10%",
-            width: "120px",
-            height: "60%",
-            background: isNight
-              ? "linear-gradient(180deg, transparent, #3E2723 30%, #4E342E 70%, transparent)"
-              : "linear-gradient(180deg, transparent, #8D6E63 30%, #A1887F 70%, transparent)",
-            borderRadius: "40%",
-            opacity: 0.6,
-          }}
-        />
+        className="absolute left-0 right-0 bottom-0"
+        style={{ height: "20%", background: `linear-gradient(180deg, ${p.fieldNear} 0%, ${p.grassDark} 100%)` }}
+      />
+
+      {/* winding dirt path (vertical band with curves) */}
+      <div className="absolute" style={{ left: "44%", bottom: 0, width: "18%", height: "34%", zIndex: 1 }}>
+        <svg viewBox="0 0 20 40" preserveAspectRatio="none" className="w-full h-full" shapeRendering="crispEdges">
+          <path
+            d="M8 40 L7 34 L9 28 L6 22 L8 16 L12 10 L10 4 L11 0 L14 0 L13 4 L15 10 L11 16 L9 22 L12 28 L10 34 L11 40 Z"
+            fill={p.path}
+          />
+          <path d="M9 36 L9 30" stroke={p.pathDark} strokeWidth="1" />
+          <path d="M8 24 L10 18" stroke={p.pathDark} strokeWidth="1" />
+        </svg>
       </div>
 
-      {/* ── TREES ── */}
+      {/* path side patches */}
+      <div className="absolute" style={{ left: "20%", bottom: "4%", width: "10%", height: "5%", background: p.path, opacity: 0.7, borderRadius: "40%", zIndex: 1 }} />
+      <div className="absolute" style={{ right: "18%", bottom: "6%", width: "12%", height: "6%", background: p.path, opacity: 0.6, borderRadius: "45%", zIndex: 1 }} />
+
+      {/* trees */}
       {trees.map((t, i) => (
-        <Tree key={`tree-${i}`} {...t} />
+        <Tree key={`tr-${i}`} {...t} p={p} />
       ))}
 
-      {/* ── GRASS TUFTS ── */}
-      {grassTufts.map((g, i) => (
-        <GrassTuft key={`grass-${i}`} {...g} />
+      {/* wild grass */}
+      {grass.map((g, i) => (
+        <WildGrass key={`gr-${i}`} {...g} p={p} />
       ))}
 
-      {/* ── FLOWERS ── */}
+      {/* flowers */}
       {flowers.map((f, i) => (
-        <Flower key={`flower-${i}`} {...f} />
+        <Flower key={`fl-${i}`} {...f} />
       ))}
 
-      {/* ── BIRDS (day only) ── */}
-      {!isNight && !isEvening && (
+      {/* birds (day) */}
+      {isDay && (
         <>
-          <Bird y={12} delay={0} duration={15} />
-          <Bird y={18} delay={8} duration={18} />
+          <Bird y={10} delay={2} dur={28} />
+          <Bird y={16} delay={17} dur={34} reverse />
         </>
       )}
 
-      {/* ── PARTICLES ── */}
-      <Particle x={20} y={35} delay={0} />
-      <Particle x={50} y={38} delay={2} />
-      <Particle x={75} y={36} delay={4} />
-      <Particle x={35} y={40} delay={1} />
-      <Particle x={60} y={37} delay={3} />
+      {/* fireflies (night) */}
+      {isNight && (
+        <>
+          <Firefly x={18} y={68} delay={0} />
+          <Firefly x={45} y={74} delay={2.2} />
+          <Firefly x={70} y={66} delay={4} />
+          <Firefly x={85} y={72} delay={1.2} />
+        </>
+      )}
+
+      {/* dim overlay when menus open */}
+      <div
+        className="absolute inset-0 pointer-events-none z-[60] transition-opacity duration-300"
+        style={{ opacity: dimmed ? 1 : 0, background: "rgba(10,10,30,0.55)" }}
+      />
     </div>
   );
 };

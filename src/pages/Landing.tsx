@@ -1,175 +1,233 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { GameWorld } from "@/game/GameWorld";
 import { Trainer } from "@/game/Trainer";
-import { CommandMenu } from "@/game/CommandMenu";
+import { CommandMenu, type CommandOption } from "@/game/CommandMenu";
 import { TrainerPanel } from "@/game/TrainerPanel";
 import { GameInterface } from "@/game/GameInterface";
 import { ArrowButton } from "@/game/ArrowButton";
+import { TitleScreen } from "@/game/TitleScreen";
+import { WorldDialog } from "@/game/DialogBox";
+import { sfx } from "@/game/sfx";
 import "@/game.css";
 
 type TimeOfDay = "day" | "evening" | "night";
+type ScreenState = "title" | "world" | "menu" | "section";
+
+const OPTIONS: CommandOption[] = [
+  { id: "trainer", label: "TRAINER", icon: "🧑‍💻" },
+  { id: "party", label: "PARTY", icon: "⚔️" },
+  { id: "pokedex", label: "POKéDEX", icon: "📖" },
+  { id: "badges", label: "BADGES", icon: "🏆" },
+  { id: "bag", label: "BAG", icon: "🎒" },
+  { id: "quests", label: "QUESTS", icon: "📜" },
+];
 
 function getTimeOfDay(): TimeOfDay {
-  const hour = new Date().getHours();
-  if (hour >= 6 && hour < 18) return "day";
-  if (hour >= 18 && hour < 21) return "evening";
+  const h = new Date().getHours();
+  if (h >= 6 && h < 17) return "day";
+  if (h >= 17 && h < 20) return "evening";
   return "night";
 }
 
-const sectionMap: Record<number, string> = {
-  0: "trainer",
-  1: "party",
-  2: "pokedex",
-  3: "badges",
-  4: "bag",
-  5: "quests",
-};
-
 export default function Landing() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [screen, setScreen] = useState<ScreenState>("title");
+  const [selIndex, setSelIndex] = useState(0);
   const [activeSection, setActiveSection] = useState<string | null>(null);
-  const [interfaceOpen, setInterfaceOpen] = useState(false);
-  const [hatClickCount, setHatClickCount] = useState(0);
   const [timeOfDay] = useState<TimeOfDay>(getTimeOfDay);
-  const [showSecret, setShowSecret] = useState(false);
+  const [soundOn, setSoundOn] = useState(false);
+  const [hatClicks, setHatClicks] = useState(0);
+  const [toast, setToast] = useState<string | null>(null);
+  const [showPanel, setShowPanel] = useState(false);
+  const [greetingDone, setGreetingDone] = useState(false);
+  const keySequence = useRef<string>("");
 
-  /* Keyboard: arrow up to open menu from initial state */
+  /* title screen handlers */
+  const handleTitleStart = useCallback((mode: "menu" | "about") => {
+    sfx.enabled = true;
+    setSoundOn(true);
+    setScreen("world");
+    if (mode === "about") {
+      // "ABOUT" jumps straight to trainer card
+      setTimeout(() => {
+        setActiveSection("trainer");
+        setScreen("section");
+        sfx.play("sectionOpen");
+      }, 350);
+    }
+  }, []);
+
+  /* keyboard: M toggles sound, D-easter-egg, arrows open menu */
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      /* Easter egg: type "dev" to show secret */
-      if (e.key === "d" && !menuOpen && !interfaceOpen) {
-        setShowSecret(true);
-        setTimeout(() => setShowSecret(false), 3000);
+    const onKey = (e: KeyboardEvent) => {
+      if (screen !== "world") return;
+
+      if (e.key.toLowerCase() === "m") {
+        sfx.enabled = !sfx.enabled;
+        setSoundOn(sfx.enabled);
+        return;
+      }
+
+      if (e.key === "ArrowUp" || e.key === "Enter") {
+        e.preventDefault();
+        sfx.play("menuOpen");
+        setScreen("menu");
+        setSelIndex(0);
+      }
+
+      /* dev-mode easter egg: type "dev" */
+      keySequence.current = (keySequence.current + e.key.toLowerCase()).slice(-3);
+      if (keySequence.current === "dev") {
+        keySequence.current = "";
+        setToast("⚡ DEV MODE — CONSOLE LIES AHEAD ⚡");
+        console.log(
+          "%c☕ Coffee: ∞   🐛 Bugs: ???   😴 Sleep: 0",
+          "font-size:16px;color:#e8534f;font-family:monospace;font-weight:bold"
+        );
+        setTimeout(() => setToast(null), 3000);
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [menuOpen, interfaceOpen]);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [screen]);
 
-  const openMenu = useCallback(() => {
-    setMenuOpen(true);
-    setSelectedIndex(0);
+  /* menu select (also handles ESC via -1) */
+  const handleMenuSelect = useCallback((index: number) => {
+    if (index === -1) {
+      sfx.play("menuBack");
+      setScreen("world");
+      return;
+    }
+    const opt = OPTIONS[index];
+    if (!opt) return;
+    setActiveSection(opt.id);
+    setScreen("section");
+    sfx.play("sectionOpen");
   }, []);
 
-  const closeMenu = useCallback(() => {
-    setMenuOpen(false);
-  }, []);
-
-  const handleSelect = useCallback(
-    (index: number) => {
-      const section = sectionMap[index];
-      if (section) {
-        setMenuOpen(false);
-        setActiveSection(section);
-        setInterfaceOpen(true);
-      }
-    },
-    []
-  );
-
-  const closeInterface = useCallback(() => {
-    setInterfaceOpen(false);
+  const closeSection = useCallback(() => {
     setActiveSection(null);
+    setScreen("menu");
   }, []);
-
-  const handleMove = useCallback(
-    (direction: "up" | "down" | "left" | "right") => {
-      if (!menuOpen) return;
-
-      const currentRow = Math.floor(selectedIndex / 2);
-      const currentCol = selectedIndex % 2;
-
-      let newRow = currentRow;
-      let newCol = currentCol;
-
-      switch (direction) {
-        case "up":
-          newRow = Math.max(0, currentRow - 1);
-          break;
-        case "down":
-          newRow = Math.min(2, currentRow + 1);
-          break;
-        case "left":
-          newCol = 0;
-          break;
-        case "right":
-          newCol = 1;
-          break;
-      }
-
-      const newIndex = newRow * 2 + newCol;
-      if (newIndex >= 0 && newIndex < 6) {
-        setSelectedIndex(newIndex);
-      }
-    },
-    [menuOpen, selectedIndex]
-  );
 
   const handleHatClick = useCallback(() => {
-    setHatClickCount((prev) => prev + 1);
+    setHatClicks((c) => {
+      const n = c + 1;
+      if (n === 5) {
+        setToast("✨ You found the hidden sparkle! The trainer is pleased. ✨");
+        setTimeout(() => setToast(null), 3500);
+        return 0;
+      }
+      return n;
+    });
   }, []);
 
+  /* greeting dialog text once world is entered */
+  const greeting =
+    timeOfDay === "night"
+      ? "The stars are out. ABID is deep in code..."
+      : timeOfDay === "evening"
+      ? "The sun sets over the field. ABID pauses for coffee..."
+      : "A wild portfolio appeared! ABID wants to show you around.";
+
+  const inWorld = screen === "world" || screen === "menu" || screen === "section";
+
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      {/* Game World Background */}
-      <GameWorld timeOfDay={timeOfDay} dimmed={menuOpen || interfaceOpen} />
+    <div className="relative w-full h-[100dvh] overflow-hidden select-none">
+      {/* World */}
+      {inWorld && (
+        <>
+          <GameWorld timeOfDay={timeOfDay} dimmed={screen !== "world"} />
+          <Trainer onHatClick={handleHatClick} />
+          <div className="crt-overlay" />
+        </>
+      )}
 
-      {/* Trainer Character */}
-      <Trainer hatClickCount={hatClickCount} onHatClick={handleHatClick} />
+      {/* Greeting dialog after title */}
+      {screen === "world" && (
+        <WorldDialog
+          text={greeting}
+          visible={!greetingDone}
+          onDone={() => setTimeout(() => setGreetingDone(true), 1200)}
+        />
+      )}
 
-      {/* Trainer Info Panel (left side when menu open) */}
-      <TrainerPanel isOpen={menuOpen} />
+      {/* Arrow prompt */}
+      <ArrowButton
+        visible={screen === "world" && greetingDone}
+        onClick={() => { setScreen("menu"); setSelIndex(0); }}
+      />
 
-      {/* Command Menu (right side) */}
+      {/* Command menu */}
       <CommandMenu
-        isOpen={menuOpen}
-        selectedIndex={selectedIndex}
-        onSelect={handleSelect}
-        onClose={closeMenu}
-        onMove={handleMove}
+        isOpen={screen === "menu"}
+        selectedIndex={selIndex}
+        onSelect={handleMenuSelect}
+        onHover={setSelIndex}
+        options={OPTIONS}
       />
 
-      {/* Bottom Arrow Button */}
-      <ArrowButton visible={!menuOpen && !interfaceOpen} onClick={openMenu} />
+      {/* Trainer info panel */}
+      <TrainerPanel isOpen={screen === "menu"} />
 
-      {/* Game Interface Overlay */}
+      {/* Section interface */}
       <GameInterface
-        isOpen={interfaceOpen}
+        isOpen={screen === "section"}
         section={activeSection}
-        onClose={closeInterface}
+        onClose={closeSection}
       />
 
-      {/* Secret Easter Egg */}
-      {showSecret && (
-        <div
-          className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2"
+      {/* Sound toggle chip (top right) */}
+      {inWorld && (
+        <button
+          onClick={() => { sfx.enabled = !sfx.enabled; setSoundOn(sfx.enabled); if (sfx.enabled) sfx.play("menuMove"); }}
+          className="absolute top-3 right-3 z-50 panel-chip"
           style={{
             fontFamily: "var(--rpg-font)",
-            fontSize: "8px",
-            color: "var(--rpg-gold)",
-            background: "rgba(15, 52, 96, 0.95)",
-            border: "2px solid var(--rpg-gold)",
-            animation: "fadeIn 0.3s ease-out",
+            fontSize: 10,
+            padding: "8px 10px",
+            borderRadius: 8,
+            minHeight: 40,
+            minWidth: 40,
+          }}
+          aria-label="Toggle sound"
+        >
+          {soundOn ? "🔊" : "🔇"}
+        </button>
+      )}
+
+      {/* Time-of-day chip */}
+      {inWorld && (
+        <div
+          className="absolute top-3 left-3 z-50 panel-chip"
+          style={{
+            fontFamily: "var(--rpg-font)",
+            fontSize: 7,
+            padding: "8px 10px",
+            borderRadius: 8,
+            color: "#444",
+            pointerEvents: "none",
           }}
         >
-          ⚡ DEVELOPER MODE ACTIVATED ⚡
+          {timeOfDay === "day" ? "☀️ DAY" : timeOfDay === "evening" ? "🌆 EVENING" : "🌙 NIGHT"}
         </div>
       )}
 
-      {/* Tiny footer (only visible on scroll) */}
-      <div
-        className="absolute bottom-0 left-0 right-0 translate-y-full"
-        style={{
-          fontFamily: "var(--rpg-font)",
-          fontSize: "6px",
-          color: "rgba(255,255,255,0.3)",
-          padding: "20px",
-          textAlign: "center",
-          background: "rgba(0,0,0,0.8)",
-        }}
-      >
-        © 2026 ABID · BUILT WITH REACT & TAILWIND
+      {/* Toast for easter eggs */}
+      {toast && (
+        <div
+          className="fixed top-16 left-1/2 -translate-x-1/2 z-[90] dialog-frame"
+          style={{ animation: "fadeIn 0.3s ease-out", maxWidth: "90vw", textAlign: "center" }}
+        >
+          <p className="dialog-text" style={{ minHeight: 0 }}>{toast}</p>
+        </div>
+      )}
+
+      {/* Title screen */}
+      <TitleScreen visible={screen === "title"} onStart={handleTitleStart} />
+
+      {/* mobile footer (below fold, needs scroll intent — keeping minimal) */}
+      <div className="sr-only">
+        © 2026 ABID — GitHub · Email · Built with React, Tailwind & WebAudio
       </div>
     </div>
   );

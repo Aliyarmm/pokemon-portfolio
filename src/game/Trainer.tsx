@@ -1,202 +1,74 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
+import { PixelSprite } from "./PixelSprite";
+import { trainerSprite, trainerSpriteB } from "./sprites";
+import { sfx } from "./sfx";
 
 interface TrainerProps {
-  hatClickCount: number;
   onHatClick: () => void;
 }
 
-export const Trainer: React.FC<TrainerProps> = ({ hatClickCount, onHatClick }) => {
-  const [isExcited, setIsExcited] = useState(false);
+export const Trainer: React.FC<TrainerProps> = ({ onHatClick }) => {
+  const [frame, setFrame] = useState(0);
+  const [excited, setExcited] = useState(false);
+  const timerRef = useRef<number | null>(null);
+
+  /* 2-frame idle animation */
+  useEffect(() => {
+    const id = window.setInterval(() => setFrame((f) => (f + 1) % 2), 700);
+    return () => window.clearInterval(id);
+  }, []);
 
   const handleHatClick = useCallback(() => {
     onHatClick();
-    if (hatClickCount >= 4) {
-      setIsExcited(true);
-      setTimeout(() => setIsExcited(false), 2000);
-    }
-  }, [hatClickCount, onHatClick]);
+    sfx.play("menuSelect");
+    if (excited) return;
+    setExcited(true);
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => setExcited(false), 1600);
+  }, [onHatClick, excited]);
+
+  const sprite = frame === 0 ? trainerSprite : trainerSpriteB;
 
   return (
     <div
-      className="absolute left-1/2 -translate-x-1/2 z-[5]"
-      style={{ bottom: "20%", animation: "trainerIdle 3s ease-in-out infinite" }}
+      className="absolute left-1/2 z-[5]"
+      style={{ bottom: "17%", transform: "translateX(-50%)" }}
     >
-      <div
-        className="relative cursor-pointer"
-        style={{ animation: "trainerBreathe 4s ease-in-out infinite" }}
-        onClick={handleHatClick}
-      >
-        {/* Shadow */}
+      <div className="relative" style={{ animation: excited ? "trainerHop 0.35s ease-in-out 4" : "none" }}>
+        {/* shadow */}
         <div
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full bg-black/20"
-          style={{ width: "40px", height: "8px" }}
+          className="absolute left-1/2 -translate-x-1/2 rounded-[50%]"
+          style={{ bottom: -4, width: 56, height: 12, background: "rgba(0,0,0,0.22)" }}
         />
 
-        {/* Body */}
-        <div className="relative" style={{ width: "48px", height: "72px" }}>
-          {/* Hat */}
-          <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 z-10 cursor-pointer"
-            style={{
-              width: "32px",
-              height: "14px",
-              background: "#E53935",
-              borderRadius: "4px 4px 0 0",
-              transition: "transform 0.2s",
-              transform: isExcited ? "rotate(-15deg) translateY(-5px)" : undefined,
-            }}
-          >
-            {/* Hat brim */}
-            <div
-              className="absolute -bottom-1 -left-2"
-              style={{
-                width: "36px",
-                height: "6px",
-                background: "#C62828",
-                borderRadius: "2px",
-              }}
-            />
-            {/* Hat emblem */}
-            <div
-              className="absolute top-1 left-1/2 -translate-x-1/2 rounded-full"
-              style={{
-                width: "8px",
-                height: "8px",
-                background: "white",
-                border: "2px solid #E53935",
-              }}
-            />
-          </div>
+        {/* sprite — clickable region covers whole body, hat is the top 6 rows */}
+        <button
+          onClick={handleHatClick}
+          aria-label="Trainer"
+          className="relative block"
+          style={{ imageRendering: "pixelated" }}
+        >
+          <PixelSprite sprite={sprite} scale={5} />
+        </button>
 
-          {/* Hair */}
-          <div
-            className="absolute top-[12px] left-1/2 -translate-x-1/2"
-            style={{
-              width: "24px",
-              height: "10px",
-              background: "#3E2723",
-              borderRadius: "0 0 4px 4px",
-            }}
-          />
-
-          {/* Face */}
-          <div
-            className="absolute top-[18px] left-1/2 -translate-x-1/2"
-            style={{
-              width: "20px",
-              height: "14px",
-              background: "#FFCC80",
-              borderRadius: "4px",
-            }}
-          >
-            {/* Eyes */}
-            <div className="absolute top-[4px] left-[3px] w-[3px] h-[3px] bg-[#3E2723] rounded-full" />
-            <div className="absolute top-[4px] right-[3px] w-[3px] h-[3px] bg-[#3E2723] rounded-full" />
-            {/* Mouth */}
-            <div className="absolute bottom-[2px] left-1/2 -translate-x-1/2 w-[4px] h-[1px] bg-[#5D4037] rounded-full" />
-          </div>
-
-          {/* Shirt */}
-          <div
-            className="absolute top-[30px] left-1/2 -translate-x-1/2"
-            style={{
-              width: "28px",
-              height: "18px",
-              background: "#42A5F5",
-              borderRadius: "2px",
-            }}
-          >
-            {/* Collar */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[6px] h-[4px] bg-white" />
-          </div>
-
-          {/* Arms */}
-          <div
-            className="absolute top-[32px]"
-            style={{
-              left: "0px",
-              width: "8px",
-              height: "16px",
-              background: "#42A5F5",
-              borderRadius: "2px",
-            }}
-          />
-          <div
-            className="absolute top-[32px]"
-            style={{
-              right: "0px",
-              width: "8px",
-              height: "16px",
-              background: "#42A5F5",
-              borderRadius: "2px",
-            }}
-          />
-
-          {/* Pants */}
-          <div
-            className="absolute top-[46px] left-1/2 -translate-x-1/2"
-            style={{
-              width: "24px",
-              height: "14px",
-              background: "#37474F",
-              borderRadius: "0 0 2px 2px",
-            }}
-          />
-
-          {/* Shoes */}
-          <div
-            className="absolute bottom-0 left-[6px]"
-            style={{
-              width: "12px",
-              height: "6px",
-              background: "#5D4037",
-              borderRadius: "2px",
-            }}
-          />
-          <div
-            className="absolute bottom-0 right-[6px]"
-            style={{
-              width: "12px",
-              height: "6px",
-              background: "#5D4037",
-              borderRadius: "2px",
-            }}
-          />
-        </div>
-
-        {/* Excited sparkles */}
-        {isExcited && (
+        {/* excitement sparkles */}
+        {excited && (
           <>
-            <div
-              className="absolute -top-4 -left-4 text-[12px]"
-              style={{ animation: "particleFloat 1s ease-out forwards" }}
-            >
-              ✨
-            </div>
-            <div
-              className="absolute -top-2 -right-6 text-[12px]"
-              style={{ animation: "particleFloat 1.2s ease-out 0.2s forwards" }}
-            >
-              ⭐
-            </div>
-            <div
-              className="absolute -top-6 right-0 text-[12px]"
-              style={{ animation: "particleFloat 0.8s ease-out 0.4s forwards" }}
-            >
-              💫
-            </div>
+            <div className="absolute -top-3 -left-4 text-sm" style={{ animation: "particleFloat 1.2s ease-out forwards" }}>✨</div>
+            <div className="absolute -top-5 right-0 text-sm" style={{ animation: "particleFloat 1.4s ease-out 0.2s forwards" }}>⭐</div>
+            <div className="absolute top-2 -right-5 text-sm" style={{ animation: "particleFloat 1.1s ease-out 0.4s forwards" }}>💫</div>
           </>
         )}
       </div>
 
-      {/* Trainer name tag */}
+      {/* name tag */}
       <div
-        className="text-center mt-1"
+        className="text-center mt-2 select-none"
         style={{
           fontFamily: "var(--rpg-font)",
-          fontSize: "8px",
-          color: "white",
-          textShadow: "1px 1px 2px rgba(0,0,0,0.8)",
+          fontSize: 7,
+          color: "#fff",
+          textShadow: "1px 1px 0 rgba(0,0,0,0.7)",
         }}
       >
         ABID

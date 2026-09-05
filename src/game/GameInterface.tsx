@@ -6,6 +6,7 @@ import { PokedexSection } from "./sections/PokedexSection";
 import { BadgesSection } from "./sections/BadgesSection";
 import { BagSection } from "./sections/BagSection";
 import { QuestsSection } from "./sections/QuestsSection";
+import { sfx } from "./sfx";
 
 interface GameInterfaceProps {
   isOpen: boolean;
@@ -13,22 +14,13 @@ interface GameInterfaceProps {
   onClose: () => void;
 }
 
-const sectionTitles: Record<string, { icon: string; title: string }> = {
-  trainer: { icon: "🧑‍💻", title: "TRAINER CARD" },
-  party: { icon: "⚔️", title: "PARTY" },
-  pokedex: { icon: "📖", title: "POKéDEX" },
-  badges: { icon: "🏆", title: "BADGES" },
-  bag: { icon: "🎒", title: "BAG" },
-  quests: { icon: "📜", title: "QUESTS" },
-};
-
-const sectionComponents: Record<string, React.FC> = {
-  trainer: TrainerSection,
-  party: PartySection,
-  pokedex: PokedexSection,
-  badges: BadgesSection,
-  bag: BagSection,
-  quests: QuestsSection,
+const sections: Record<string, { icon: string; title: string; Comp: React.FC }> = {
+  trainer: { icon: "🧑‍💻", title: "TRAINER CARD", Comp: TrainerSection },
+  party: { icon: "⚔️", title: "PARTY", Comp: PartySection },
+  pokedex: { icon: "📖", title: "POKéDEX", Comp: PokedexSection },
+  badges: { icon: "🏆", title: "BADGE CASE", Comp: BadgesSection },
+  bag: { icon: "🎒", title: "BAG", Comp: BagSection },
+  quests: { icon: "📜", title: "QUEST LOG", Comp: QuestsSection },
 };
 
 export const GameInterface: React.FC<GameInterfaceProps> = ({
@@ -36,10 +28,12 @@ export const GameInterface: React.FC<GameInterfaceProps> = ({
   section,
   onClose,
 }) => {
-  /* ESC to close */
-  const handleKeyDown = useCallback(
+  const onKey = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
+      if (!isOpen) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        sfx.play("sectionClose");
         onClose();
       }
     },
@@ -47,110 +41,61 @@ export const GameInterface: React.FC<GameInterfaceProps> = ({
   );
 
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyDown]);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onKey]);
 
-  const SectionComponent = section ? sectionComponents[section] : null;
-  const sectionInfo = section ? sectionTitles[section] : null;
+  const entry = section ? sections[section] : null;
+  const Comp = entry?.Comp;
 
   return (
     <AnimatePresence>
-      {isOpen && section && SectionComponent && (
+      {isOpen && Comp && entry && (
         <>
-          {/* Dark overlay */}
+          {/* dark overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-30"
-            style={{
-              background: "rgba(0, 0, 0, 0.65)",
-              backdropFilter: "blur(2px)",
-            }}
-            onClick={onClose}
+            transition={{ duration: 0.28 }}
+            className="fixed inset-0 z-40"
+            style={{ background: "rgba(8, 8, 24, 0.6)" }}
+            onClick={() => { sfx.play("sectionClose"); onClose(); }}
           />
 
-          {/* Interface panel */}
+          {/* centered game panel */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.92, y: 24 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="fixed inset-4 md:inset-8 lg:inset-12 z-40 flex flex-col"
+            exit={{ opacity: 0, scale: 0.94, y: 16 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed z-50 flex flex-col inset-2 md:inset-x-10 lg:inset-x-24 inset-y-4 md:inset-y-8"
           >
-            <div
-              className="pixel-border flex-1 flex flex-col overflow-hidden"
-              style={{
-                background: "linear-gradient(180deg, #0f3460 0%, #1a1a2e 100%)",
-              }}
-            >
-              {/* Header bar */}
-              <div
-                className="flex items-center justify-between px-4 py-3"
-                style={{
-                  background: "rgba(0,0,0,0.3)",
-                  borderBottom: "3px solid var(--rpg-accent)",
-                }}
-              >
+            <div className="panel-frame flex-1 flex flex-col overflow-hidden">
+              {/* header */}
+              <div className="panel-header flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">{sectionInfo?.icon}</span>
-                  <span
-                    style={{
-                      fontFamily: "var(--rpg-font)",
-                      fontSize: "12px",
-                      color: "var(--rpg-gold)",
-                      textShadow: "0 0 10px rgba(251, 191, 36, 0.5)",
-                    }}
-                  >
-                    {sectionInfo?.title}
-                  </span>
+                  <span className="text-base md:text-lg">{entry.icon}</span>
+                  <span className="panel-title">{entry.title}</span>
                 </div>
                 <button
-                  onClick={onClose}
-                  className="rpg-button"
-                  style={{
-                    fontFamily: "var(--rpg-font)",
-                    fontSize: "8px",
-                    padding: "6px 12px",
-                  }}
+                  onClick={() => { sfx.play("sectionClose"); onClose(); }}
+                  className="rpg-button text-[8px] md:text-[9px] px-3 py-1.5 min-h-[36px]"
                 >
                   ✕ BACK
                 </button>
               </div>
 
-              {/* Content */}
-              <div className="flex-1 overflow-hidden">
-                <SectionComponent />
+              {/* content */}
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <Comp />
               </div>
 
-              {/* Footer bar */}
-              <div
-                className="px-4 py-2 flex items-center justify-between"
-                style={{
-                  background: "rgba(0,0,0,0.2)",
-                  borderTop: "2px solid rgba(233, 69, 96, 0.3)",
-                }}
-              >
-                <span
-                  style={{
-                    fontFamily: "var(--rpg-font)",
-                    fontSize: "6px",
-                    color: "var(--rpg-text-dim)",
-                  }}
-                >
-                  PRESS ESC OR CLICK BACK TO RETURN
-                </span>
-                <span
-                  style={{
-                    fontFamily: "var(--rpg-font)",
-                    fontSize: "6px",
-                    color: "var(--rpg-accent)",
-                  }}
-                >
-                  ▶ SELECT
-                </span>
+              {/* footer */}
+              <div className="panel-footer">
+                <span>ESC / BACK TO RETURN</span>
+                <span className="hidden sm:inline">MADE WITH ♥ · 2026</span>
+                <span className="text-[var(--rpg-red)]">▶</span>
               </div>
             </div>
           </motion.div>
