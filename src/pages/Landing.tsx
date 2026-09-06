@@ -208,17 +208,17 @@ export default function Landing() {
         onClick={() => { setScreen("menu"); setSelIndex(0); }}
       />
 
-      {/* Command menu */}
-      <CommandMenu
-        isOpen={screen === "menu"}
-        selectedIndex={selIndex}
-        onSelect={handleMenuSelect}
-        onHover={setSelIndex}
-        options={OPTIONS}
-      />
-
-      {/* Trainer info panel */}
-      <TrainerPanel isOpen={screen === "menu"} />
+      {/* Bottom-docked UI row — one flex container: panel (⅓) + menu can never overlap */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex flex-col-reverse items-center gap-2 px-2 pb-2 md:flex-row md:items-end md:gap-4 md:px-8 md:pb-4">
+        <TrainerPanel isOpen={screen === "menu"} />
+        <CommandMenu
+          isOpen={screen === "menu"}
+          selectedIndex={selIndex}
+          onSelect={handleMenuSelect}
+          onHover={setSelIndex}
+          options={OPTIONS}
+        />
+      </div>
 
       {/* Section interface */}
       <GameInterface

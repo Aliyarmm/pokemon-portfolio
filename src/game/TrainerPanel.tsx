@@ -19,10 +19,9 @@ export const TrainerPanel: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -24 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className="absolute left-2 bottom-[150px] z-30 md:left-6 md:bottom-[190px] w-[180px] md:w-[32vw] md:max-w-[420px] md:min-w-[300px]"
-          style={{ maxHeight: "calc(100dvh - 220px)" }}
+          className="pointer-events-auto shrink-0 w-[190px] md:w-1/3 md:max-w-[520px]"
         >
-          <div className="panel-frame p-2.5 md:p-4 h-full overflow-y-auto rpg-scroll">
+          <div className="panel-frame p-2.5 md:p-3.5 max-h-[36dvh] md:max-h-[52dvh] overflow-y-auto rpg-scroll">
             {/* header row: portrait + name + location */}
             <motion.div {...fadeUp(0.05)} className="flex items-center gap-2.5 md:gap-3">
               <div className="portrait-box shrink-0">
@@ -48,7 +47,7 @@ export const TrainerPanel: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
             <motion.div {...fadeUp(0.12)} className="panel-sep" />
 
             {/* two-column body: left = description, right = specialty + tags + HP */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 gap-y-2">
               {/* left column — extended description */}
               <div className="space-y-1.5 min-w-0">
                 {trainer.extendedDescription.map((para, i) => (
