@@ -13,7 +13,7 @@ export const TrainerPanel: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -24 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className="absolute left-2 top-14 z-30 md:left-6 md:top-20 w-1/3"
+          className="absolute left-2 top-14 z-30 md:left-6 md:top-20 w-1/2 md:w-1/3"
         >
           <div className="panel-frame p-2.5 md:p-3 flex flex-col min-h-[210px] md:min-h-[290px]">
             {/* portrait + name */}
