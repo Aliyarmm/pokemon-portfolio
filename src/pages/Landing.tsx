@@ -142,16 +142,34 @@ export default function Landing() {
     }
   }, [screen]);
 
-  /* day → evening → night cycle (T key or chip click) */
+  /* day → evening → night cycle (T key or chip click)
+     Timeline: fade veil in → swap palettes while screen is black → fade veil out.
+     The palette change MUST happen after the veil is fully opaque,
+     otherwise the new world is visible during the fade. */
   const [timeFlash, setTimeFlash] = useState(false);
   const flashTimer = useRef<number | null>(null);
+  const swapTimer = useRef<number | null>(null);
   const cycleTime = useCallback(() => {
     sfx.play("menuMove");
-    setTimeOfDay((t) => (t === "day" ? "evening" : t === "evening" ? "night" : "day"));
-    setTimeFlash(true);
     if (flashTimer.current) window.clearTimeout(flashTimer.current);
-    flashTimer.current = window.setTimeout(() => setTimeFlash(false), 420);
+    if (swapTimer.current) window.clearTimeout(swapTimer.current);
+    /* phase 1 — fade to black over the OLD world (400ms) */
+    setTimeFlash(true);
+    /* phase 2 — swap the world while the screen is fully covered (at ~420ms) */
+    swapTimer.current = window.setTimeout(() => {
+      setTimeOfDay((t) => (t === "day" ? "evening" : t === "evening" ? "night" : "day"));
+    }, 420);
+    /* phase 3 — brief hold on black, then fade out revealing the NEW world */
+    flashTimer.current = window.setTimeout(() => setTimeFlash(false), 560);
   }, []);
+
+  useEffect(
+    () => () => {
+      if (flashTimer.current) window.clearTimeout(flashTimer.current);
+      if (swapTimer.current) window.clearTimeout(swapTimer.current);
+    },
+    []
+  );
 
   return (
     <div className="relative w-full h-[100dvh] overflow-hidden select-none">
