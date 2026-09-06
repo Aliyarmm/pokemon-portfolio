@@ -1,36 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { DialogBox } from "./DialogBox";
 import { sfx } from "./sfx";
 
 interface TitleScreenProps {
-  onStart: (mode: "menu" | "about") => void;
+  onStart: () => void;
   visible: boolean;
 }
 
 export const TitleScreen: React.FC<TitleScreenProps> = ({ onStart, visible }) => {
-  const [phase, setPhase] = useState<"title" | "prompt">("title");
-  const [sel, setSel] = useState(0);
+  const [ready, setReady] = useState(false);
+  const isTouch =
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(pointer: coarse)").matches;
 
-  React.useEffect(() => {
-    const t = setTimeout(() => setPhase("prompt"), 1600);
+  /* brief title beat before the prompt appears */
+  useEffect(() => {
+    const t = setTimeout(() => setReady(true), 1400);
     return () => clearTimeout(t);
   }, []);
 
-  React.useEffect(() => {
-    if (phase !== "prompt") return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-        setSel((s) => (s + 1) % 2);
-        sfx.play("menuMove");
-      } else if (e.key === "Enter" || e.key === " ") {
-        sfx.play("menuSelect");
-        onStart(sel === 0 ? "menu" : "about");
-      }
+  /* any key starts (desktop) */
+  useEffect(() => {
+    if (!ready || !visible) return;
+    const onKey = () => {
+      sfx.play("menuSelect");
+      onStart();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [phase, sel, onStart]);
+  }, [ready, visible, onStart]);
+
+  const handleTap = () => {
+    if (!ready) {
+      setReady(true);
+      return;
+    }
+    sfx.play("menuSelect");
+    onStart();
+  };
 
   return (
     <AnimatePresence>
@@ -39,9 +47,9 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onStart, visible }) =>
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.4 } }}
-          className="fixed inset-0 z-[70] flex flex-col items-center justify-center"
+          className="fixed inset-0 z-[70] flex flex-col items-center justify-center cursor-pointer"
           style={{ background: "linear-gradient(180deg, rgba(10,14,42,0.88) 0%, rgba(20,28,66,0.82) 100%)" }}
-          onClick={() => phase === "title" && setPhase("prompt")}
+          onClick={handleTap}
         >
           {/* Title */}
           <motion.div
@@ -75,35 +83,19 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onStart, visible }) =>
             </div>
           </motion.div>
 
-          {/* press start / menu */}
-          <div className="mt-10 w-full max-w-md px-4">
-            {phase === "title" ? (
+          {/* press-any-key / tap-anywhere prompt */}
+          <div className="mt-12 px-4 text-center min-h-[24px]">
+            {ready && (
               <div
-                className="text-center"
                 style={{
                   fontFamily: "var(--rpg-font)",
                   fontSize: "clamp(9px, 2.6vw, 12px)",
                   color: "#fff",
                   animation: "pulseSoft 1.4s ease-in-out infinite",
+                  textShadow: "2px 2px 0 rgba(0,0,0,0.5)",
                 }}
               >
-                PRESS ANYWHERE TO START
-              </div>
-            ) : (
-              <div className="dialog-frame">
-                {["NEW GAME", "ABOUT"].map((label, i) => (
-                  <button
-                    key={label}
-                    onMouseEnter={() => { setSel(i); sfx.play("menuMove"); }}
-                    onClick={() => { sfx.play("menuSelect"); onStart(i === 0 ? "menu" : "about"); }}
-                    className="w-full flex items-center gap-2 py-2.5 px-2 min-h-[44px]"
-                  >
-                    <span style={{ color: "var(--rpg-red)", fontSize: 11, opacity: sel === i ? 1 : 0 }}>▶</span>
-                    <span style={{ fontFamily: "var(--rpg-font)", fontSize: "clamp(10px,2.6vw,12px)", color: "var(--rpg-ink)" }}>
-                      {label}
-                    </span>
-                  </button>
-                ))}
+                {isTouch ? "TAP ANYWHERE TO START" : "PRESS ANY KEY TO CONTINUE"}
               </div>
             )}
           </div>

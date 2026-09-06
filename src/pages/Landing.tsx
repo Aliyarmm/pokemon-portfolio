@@ -42,19 +42,11 @@ export default function Landing() {
   const [greetingDone, setGreetingDone] = useState(false);
   const keySequence = useRef<string>("");
 
-  /* title screen handlers */
-  const handleTitleStart = useCallback((mode: "menu" | "about") => {
+  /* title screen: any key / tap enters the world */
+  const handleTitleStart = useCallback(() => {
     sfx.enabled = true;
     setSoundOn(true);
     setScreen("world");
-    if (mode === "about") {
-      // "ABOUT" jumps straight to trainer card
-      setTimeout(() => {
-        setActiveSection("trainer");
-        setScreen("section");
-        sfx.play("sectionOpen");
-      }, 350);
-    }
   }, []);
 
   /* keyboard: M toggles sound, D-easter-egg, arrows open menu */
