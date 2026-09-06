@@ -13,9 +13,9 @@ export const TrainerPanel: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -24 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className="absolute left-2 top-14 z-30 md:left-6 md:top-20 w-[132px] md:w-[180px]"
+          className="absolute left-2 top-14 z-30 md:left-6 md:top-20 w-1/3"
         >
-          <div className="panel-frame p-2.5 md:p-3">
+          <div className="panel-frame p-2.5 md:p-3 flex flex-col min-h-[210px] md:min-h-[290px]">
             {/* portrait + name */}
             <div className="flex items-center gap-2 mb-2">
               <div className="portrait-box shrink-0">
@@ -34,21 +34,21 @@ export const TrainerPanel: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
             <div className="panel-sep" />
 
             <div
-              className="text-[6px] leading-relaxed"
+              className="text-[6px] md:text-[7px] leading-relaxed"
               style={{ fontFamily: "var(--rpg-font)", color: "#4a4a4a" }}
             >
               {trainer.specialty.join(" · ")}
             </div>
 
             <p
-              className="mt-2 text-[6px] leading-loose"
+              className="mt-2 text-[6px] md:text-[7px] leading-loose"
               style={{ fontFamily: "var(--rpg-font)", color: "#6a6a6a" }}
             >
               {trainer.description}
             </p>
 
-            {/* HP-style level bar */}
-            <div className="mt-3">
+            {/* HP-style level bar — pinned to the bottom of the extended panel */}
+            <div className="mt-auto pt-3">
               <div className="flex items-center justify-between mb-1">
                 <span className="stat-label">HP</span>
                 <span className="stat-label" style={{ color: "var(--rpg-green)" }}>
