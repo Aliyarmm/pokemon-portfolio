@@ -156,6 +156,15 @@ export default function Landing() {
         />
       )}
 
+      {/* Click-outside catcher — clicking the darkened world dismisses back to idle */}
+      {uiOpen && (
+        <div
+          className="absolute inset-0 z-20"
+          onClick={handleClose}
+          aria-hidden
+        />
+      )}
+
       {/* Greeting dialog after title */}
       {screen === "world" && (
         <WorldDialog
