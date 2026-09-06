@@ -34,7 +34,7 @@ export default function Landing() {
   const [screen, setScreen] = useState<ScreenState>("title");
   const [selIndex, setSelIndex] = useState(0);
   const [activeSection, setActiveSection] = useState<string | null>(null);
-  const [timeOfDay] = useState<TimeOfDay>(getTimeOfDay);
+  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(getTimeOfDay);
   const [soundOn, setSoundOn] = useState(false);
   const [hatClicks, setHatClicks] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
@@ -57,6 +57,11 @@ export default function Landing() {
       if (e.key.toLowerCase() === "m") {
         sfx.enabled = !sfx.enabled;
         setSoundOn(sfx.enabled);
+        return;
+      }
+
+      if (e.key.toLowerCase() === "t") {
+        cycleTime();
         return;
       }
 
@@ -137,6 +142,17 @@ export default function Landing() {
     }
   }, [screen]);
 
+  /* day → evening → night cycle (T key or chip click) */
+  const [timeFlash, setTimeFlash] = useState(false);
+  const flashTimer = useRef<number | null>(null);
+  const cycleTime = useCallback(() => {
+    sfx.play("menuMove");
+    setTimeOfDay((t) => (t === "day" ? "evening" : t === "evening" ? "night" : "day"));
+    setTimeFlash(true);
+    if (flashTimer.current) window.clearTimeout(flashTimer.current);
+    flashTimer.current = window.setTimeout(() => setTimeFlash(false), 420);
+  }, []);
+
   return (
     <div className="relative w-full h-[100dvh] overflow-hidden select-none">
       {/* World (z-0 stacking context) */}
@@ -153,6 +169,18 @@ export default function Landing() {
         <div
           className="absolute inset-0 pointer-events-none z-10 transition-opacity duration-300"
           style={{ opacity: screen === "world" ? 0 : 1, background: "rgba(10,10,30,0.55)" }}
+        />
+      )}
+
+      {/* Time-cycle transition veil */}
+      {inWorld && (
+        <div
+          className="absolute inset-0 pointer-events-none z-[15]"
+          style={{
+            background: "#000",
+            opacity: timeFlash ? 1 : 0,
+            transition: `opacity ${timeFlash ? 0.4 : 0.6}s ease-in-out`,
+          }}
         />
       )}
 
@@ -256,9 +284,13 @@ export default function Landing() {
         )}
       </AnimatePresence>
 
-      {/* Time-of-day chip */}
+      {/* Time-of-day chip — click to cycle day → evening → night */}
       {inWorld && (
-        <div
+        <button
+          onClick={cycleTime}
+          onMouseEnter={() => sfx.play("hover")}
+          title="Cycle time of day (T)"
+          aria-label="Cycle time of day"
           className="absolute top-3 left-3 z-50 panel-chip"
           style={{
             fontFamily: "var(--rpg-font)",
@@ -266,11 +298,12 @@ export default function Landing() {
             padding: "8px 10px",
             borderRadius: 8,
             color: "#444",
-            pointerEvents: "none",
+            minHeight: 36,
+            touchAction: "manipulation",
           }}
         >
-          {timeOfDay === "day" ? "☀️ DAY" : timeOfDay === "evening" ? "🌆 EVENING" : "🌙 NIGHT"}
-        </div>
+          {timeOfDay === "day" ? "☀️ DAY" : timeOfDay === "evening" ? "🌆 EVENING" : "🌙 NIGHT"} ⇄
+        </button>
       )}
 
       {/* Toast for easter eggs */}
