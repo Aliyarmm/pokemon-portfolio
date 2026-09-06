@@ -1,6 +1,8 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trainer } from "@/data";
+import { PixelSprite } from "./PixelSprite";
+import { trainerSprite } from "./sprites";
 
 export const TrainerPanel: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
   return (
@@ -16,21 +18,8 @@ export const TrainerPanel: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
           <div className="panel-frame p-2.5 md:p-3">
             {/* portrait + name */}
             <div className="flex items-center gap-2 mb-2">
-              <div className="portrait-box shrink-0 overflow-hidden">
-                {/* proportional crop of the character in trainer.png (x 490-753, y 25-791) */}
-                <div
-                  className="relative block"
-                  style={{ width: 40, height: 56 }}
-                >
-                  <img
-                    src="/assets/trainer.png"
-                    alt=""
-                    aria-hidden
-                    draggable={false}
-                    className="absolute select-none"
-                    style={{ width: "472.73%", left: "-185.61%", top: "-3.26%", maxWidth: "none" }}
-                  />
-                </div>
+              <div className="portrait-box shrink-0">
+                <PixelSprite sprite={trainerSprite} scale={2.5} />
               </div>
               <div className="min-w-0">
                 <div className="panel-title" style={{ fontSize: 9 }}>{trainer.name}</div>

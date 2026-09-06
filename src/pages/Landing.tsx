@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GameWorld } from "@/game/GameWorld";
 import { Trainer } from "@/game/Trainer";
-import { Balbosur } from "@/game/Balbosur";
 import { CommandMenu, type CommandOption } from "@/game/CommandMenu";
 import { TrainerPanel } from "@/game/TrainerPanel";
 import { GameInterface } from "@/game/GameInterface";
@@ -37,7 +36,11 @@ export default function Landing() {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(getTimeOfDay);
   const [soundOn, setSoundOn] = useState(false);
+  const [hatClicks, setHatClicks] = useState(0);
+  const [toast, setToast] = useState<string | null>(null);
+  const [showPanel, setShowPanel] = useState(false);
   const [greetingDone, setGreetingDone] = useState(false);
+  const keySequence = useRef<string>("");
 
   /* title screen: any key / tap enters the world */
   const handleTitleStart = useCallback(() => {
@@ -46,7 +49,7 @@ export default function Landing() {
     setScreen("world");
   }, []);
 
-  /* keyboard: M toggles sound, T cycles time, arrows/Enter open the menu */
+  /* keyboard: M toggles sound, D-easter-egg, arrows open menu */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (screen !== "world") return;
@@ -67,6 +70,18 @@ export default function Landing() {
         sfx.play("menuOpen");
         setScreen("menu");
         setSelIndex(0);
+      }
+
+      /* dev-mode easter egg: type "dev" */
+      keySequence.current = (keySequence.current + e.key.toLowerCase()).slice(-3);
+      if (keySequence.current === "dev") {
+        keySequence.current = "";
+        setToast("⚡ DEV MODE — CONSOLE LIES AHEAD ⚡");
+        console.log(
+          "%c☕ Coffee: ∞   🐛 Bugs: ???   😴 Sleep: 0",
+          "font-size:16px;color:#e8534f;font-family:monospace;font-weight:bold"
+        );
+        setTimeout(() => setToast(null), 3000);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -90,6 +105,18 @@ export default function Landing() {
   const closeSection = useCallback(() => {
     setActiveSection(null);
     setScreen("menu");
+  }, []);
+
+  const handleHatClick = useCallback(() => {
+    setHatClicks((c) => {
+      const n = c + 1;
+      if (n === 5) {
+        setToast("✨ You found the hidden sparkle! The trainer is pleased. ✨");
+        setTimeout(() => setToast(null), 3500);
+        return 0;
+      }
+      return n;
+    });
   }, []);
 
   /* greeting dialog text once world is entered */
@@ -150,8 +177,7 @@ export default function Landing() {
       {inWorld && (
         <>
           <GameWorld timeOfDay={timeOfDay} />
-          <Balbosur />
-          <Trainer />
+          <Trainer onHatClick={handleHatClick} />
           <div className="crt-overlay" />
         </>
       )}
@@ -297,6 +323,16 @@ export default function Landing() {
         >
           {timeOfDay === "day" ? "☀️ DAY" : timeOfDay === "evening" ? "🌆 EVENING" : "🌙 NIGHT"} ⇄
         </button>
+      )}
+
+      {/* Toast for easter eggs */}
+      {toast && (
+        <div
+          className="fixed top-16 left-1/2 -translate-x-1/2 z-[90] dialog-frame"
+          style={{ animation: "fadeIn 0.3s ease-out", maxWidth: "90vw", textAlign: "center" }}
+        >
+          <p className="dialog-text" style={{ minHeight: 0 }}>{toast}</p>
+        </div>
       )}
 
       {/* Title screen */}

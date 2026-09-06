@@ -1,5 +1,7 @@
 import React from "react";
 import { trainer } from "@/data";
+import { PixelSprite } from "../PixelSprite";
+import { trainerSprite } from "../sprites";
 
 const StatBar: React.FC<{ label: string; value: number; max: number; color: string }> = ({
   label, value, max, color,
@@ -20,21 +22,8 @@ export const TrainerSection: React.FC = () => (
     <div className="max-w-3xl mx-auto space-y-4">
       {/* top card */}
       <div className="grid grid-cols-[auto_1fr] gap-4 items-start">
-        <div
-          className="portrait-box p-3 overflow-hidden"
-          style={{ animation: "trainerIdle 3s ease-in-out infinite" }}
-        >
-          {/* proportional crop of the character in trainer.png (x 490-753, y 25-791) */}
-          <div className="relative block" style={{ width: 72, height: 104 }}>
-            <img
-              src="/assets/trainer.png"
-              alt=""
-              aria-hidden
-              draggable={false}
-              className="absolute select-none"
-              style={{ width: "472.73%", left: "-185.61%", top: "-3.26%", maxWidth: "none" }}
-            />
-          </div>
+        <div className="portrait-box p-3" style={{ animation: "trainerIdle 3s ease-in-out infinite" }}>
+          <PixelSprite sprite={trainerSprite} scale={4} />
         </div>
 
         <div className="space-y-3">
