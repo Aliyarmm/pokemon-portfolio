@@ -10,7 +10,7 @@ export const Balbosur: React.FC = () => {
   return (
     <div
       className="absolute z-[4] pointer-events-none"
-      style={{ right: "6%", bottom: "24%" }}
+      style={{ right: "10%", bottom: "25%" }}
     >
       <div
         className="relative"

@@ -17,14 +17,20 @@ export const TrainerPanel: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
             {/* portrait + name */}
             <div className="flex items-center gap-2 mb-2">
               <div className="portrait-box shrink-0 overflow-hidden">
-                <img
-                  src="/assets/trainer-cutout.png"
-                  alt=""
-                  aria-hidden
-                  draggable={false}
-                  className="object-cover object-top"
-                  style={{ width: 44, height: 52, imageRendering: "auto" }}
-                />
+                {/* proportional crop of the character in trainer.png (x 490-753, y 25-791) */}
+                <div
+                  className="relative block"
+                  style={{ width: 40, height: 56 }}
+                >
+                  <img
+                    src="/assets/trainer.png"
+                    alt=""
+                    aria-hidden
+                    draggable={false}
+                    className="absolute select-none"
+                    style={{ width: "472.73%", left: "-185.61%", top: "-3.26%", maxWidth: "none" }}
+                  />
+                </div>
               </div>
               <div className="min-w-0">
                 <div className="panel-title" style={{ fontSize: 9 }}>{trainer.name}</div>

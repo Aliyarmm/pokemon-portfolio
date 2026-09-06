@@ -20,15 +20,21 @@ export const TrainerSection: React.FC = () => (
     <div className="max-w-3xl mx-auto space-y-4">
       {/* top card */}
       <div className="grid grid-cols-[auto_1fr] gap-4 items-start">
-        <div className="portrait-box p-3" style={{ animation: "trainerIdle 3s ease-in-out infinite" }}>
-          <img
-            src="/assets/trainer-cutout.png"
-            alt=""
-            aria-hidden
-            draggable={false}
-            className="block object-cover object-top"
-            style={{ width: 84, height: 96 }}
-          />
+        <div
+          className="portrait-box p-3 overflow-hidden"
+          style={{ animation: "trainerIdle 3s ease-in-out infinite" }}
+        >
+          {/* proportional crop of the character in trainer.png (x 490-753, y 25-791) */}
+          <div className="relative block" style={{ width: 72, height: 104 }}>
+            <img
+              src="/assets/trainer.png"
+              alt=""
+              aria-hidden
+              draggable={false}
+              className="absolute select-none"
+              style={{ width: "472.73%", left: "-185.61%", top: "-3.26%", maxWidth: "none" }}
+            />
+          </div>
         </div>
 
         <div className="space-y-3">

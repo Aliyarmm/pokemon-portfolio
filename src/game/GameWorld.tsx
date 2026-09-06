@@ -5,9 +5,9 @@ interface GameWorldProps {
 }
 
 /**
- * World background — hand-drawn RPG field scene (public/assets/background.png).
- * The scene itself provides sky, mountains, path, trees and grass.
- * The trainer (Trainer.tsx) and the Balbosur companion are layered on top.
+ * World background — hand-drawn RPG field scene (public/assets/scene.png).
+ * The scene provides sky, mountains, path, trees and grass. The trainer
+ * (Trainer.tsx), Balbosur companion and decorative trees are layered on top.
  */
 export const GameWorld: React.FC<GameWorldProps> = ({ timeOfDay }) => {
   return (
@@ -17,13 +17,17 @@ export const GameWorld: React.FC<GameWorldProps> = ({ timeOfDay }) => {
     >
       {/* base scene artwork — cover the full viewport on every aspect ratio */}
       <img
-        src="/assets/background.png"
+        src="/assets/scene.png"
         alt=""
         aria-hidden
         draggable={false}
         className="absolute inset-0 w-full h-full object-cover object-bottom select-none"
-        style={{ imageRendering: "auto" }}
       />
+
+      {/* field trees — the tall plant cutout, staged at a few depths */}
+      <Tree x={"14%"} bottom={"8%"} height={"clamp(90px, 22vh, 220px)"} zIndex={2} />
+      <Tree x={"64%"} bottom={"26%"} height={"clamp(40px, 11vh, 110px)"} zIndex={1} />
+      <Tree x={"6%"} bottom={"27%"} height={"clamp(34px, 9vh, 90px)"} zIndex={1} />
 
       {/* atmosphere tint per time of day (subtle, keeps artwork readable) */}
       <div
@@ -83,3 +87,25 @@ const STARS = Array.from({ length: 36 }, (_, i) => ({
   size: (i % 3) + 1,
   delay: (i % 7) * 0.4,
 }));
+
+/**
+ * Decorative tree cutout (public/assets/tree.png — the tall plant asset).
+ * Rendered at a few depths so the field feels alive on both mobile and desktop.
+ */
+const Tree: React.FC<{ x: string; bottom: string; height: string; zIndex: number }> = ({
+  x, bottom, height, zIndex,
+}) => (
+  <div
+    className="absolute pointer-events-none"
+    style={{ left: x, bottom, zIndex, animation: `treeSway ${6 + zIndex}s ease-in-out ${zIndex * 0.8}s infinite`, transformOrigin: "50% 100%" }}
+  >
+    <img
+      src="/assets/tree.png"
+      alt=""
+      aria-hidden
+      draggable={false}
+      className="block select-none"
+      style={{ height, width: "auto" }}
+    />
+  </div>
+);
