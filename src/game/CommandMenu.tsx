@@ -76,7 +76,7 @@ export const CommandMenu: React.FC<CommandMenuProps> = ({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 32 }}
           transition={{ duration: 0.22, ease: "easeOut" }}
-          className="w-full pointer-events-auto md:min-w-0 md:flex-1"
+          className="absolute left-2 right-2 bottom-2 z-30 md:left-8 md:right-8 md:bottom-6"
         >
           <div className="dialog-frame">
             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
