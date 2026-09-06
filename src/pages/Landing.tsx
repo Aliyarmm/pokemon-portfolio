@@ -264,9 +264,10 @@ export default function Landing() {
         </button>
       )}
 
-      {/* Universal close button — exits section → menu → world */}
+      {/* Close button — only when the command menu is open; section panels
+          already have their own ✕ BACK button in the header */}
       <AnimatePresence>
-        {uiOpen && (
+        {screen === "menu" && (
           <motion.button
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
