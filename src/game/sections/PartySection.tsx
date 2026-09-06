@@ -37,11 +37,11 @@ export const PartySection: React.FC = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span style={{ fontFamily: "var(--rpg-font)", fontSize: "clamp(8px,2vw,10px)" }}>{m.name}</span>
-                    <span className="type-chip" style={{ borderColor: m.color, color: m.color, fontSize: 5 }}>{m.type}</span>
+                    <span style={{ fontFamily: "var(--rpg-font)", fontSize: "clamp(10px,2.4vw,13px)" }}>{m.name}</span>
+                    <span className="type-chip" style={{ borderColor: m.color, color: m.color }}>{m.type}</span>
                   </div>
                   <div className="flex items-center gap-1.5 mt-1.5">
-                    <span className="stat-label" style={{ fontSize: 6 }}>Lv{m.level}</span>
+                    <span className="stat-label">Lv{m.level}</span>
                     <div className="hp-bar flex-1" style={{ height: 7 }}>
                       <div className="hp-fill" style={{ width: `${m.level}%`, background: m.color }} />
                     </div>

@@ -31,7 +31,7 @@ export const BagSection: React.FC = () => {
                     {item.icon}
                   </span>
                   <div className="min-w-0">
-                    <div style={{ fontFamily: "var(--rpg-font)", fontSize: "clamp(8px,2vw,10px)", color: "#222" }}>
+                    <div style={{ fontFamily: "var(--rpg-font)", fontSize: "clamp(10px,2.4vw,13px)", color: "#222" }}>
                       {item.name}
                     </div>
                     <div className="stat-label mt-1" style={{ color: "#888" }}>{item.type}</div>

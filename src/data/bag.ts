@@ -41,6 +41,14 @@ export const bag: BagItem[] = [
     type: "SOCIAL",
   },
   {
+    id: "instagram",
+    name: "INSTAGRAM",
+    description: "Follow @_abid.eeey.",
+    icon: "📸",
+    url: "https://instagram.com/_abid.eeey",
+    type: "SOCIAL",
+  },
+  {
     id: "website",
     name: "WEBSITE",
     description: "Visit my personal website.",
