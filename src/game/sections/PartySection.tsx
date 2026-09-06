@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { party, type PartyMember } from "@/data";
-import { PixelSprite } from "../PixelSprite";
-import { creatureSprite } from "../sprites";
 
 export const PartySection: React.FC = () => {
   const [selected, setSelected] = useState<PartyMember>(party[0]);
@@ -33,7 +31,7 @@ export const PartySection: React.FC = () => {
                     border: `2px solid ${m.color}`,
                   }}
                 >
-                  <PixelSprite sprite={creatureSprite} scale={2.4} />
+                  <span style={{ fontSize: 20 }}>{m.icon}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
@@ -59,7 +57,7 @@ export const PartySection: React.FC = () => {
               className="shrink-0 flex items-center justify-center"
               style={{ width: 64, height: 64, background: `${selected.color}22`, border: `3px solid ${selected.color}` }}
             >
-              <PixelSprite sprite={creatureSprite} scale={3.4} />
+              <span style={{ fontSize: 30 }}>{selected.icon}</span>
             </div>
             <div>
               <div className="panel-title" style={{ fontSize: "clamp(11px,2.5vw,14px)" }}>{selected.name}</div>
