@@ -3,17 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { trainer } from "@/data";
 import { PixelSprite } from "./PixelSprite";
 import { trainerSprite } from "./sprites";
-import { sfx } from "./sfx";
 
 export const TrainerPanel: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
-  const [soundOn, setSoundOn] = React.useState(sfx.enabled);
-
-  const toggleSound = () => {
-    sfx.enabled = !sfx.enabled;
-    if (sfx.enabled) sfx.play("menuSelect");
-    setSoundOn(sfx.enabled);
-  };
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -38,15 +29,6 @@ export const TrainerPanel: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
                   {trainer.class}
                 </div>
               </div>
-              <button
-                onClick={toggleSound}
-                className="ml-auto panel-chip text-[8px] px-1.5 py-1 shrink-0"
-                style={{ fontFamily: "var(--rpg-font)" }}
-                aria-label={soundOn ? "Mute sound" : "Enable sound"}
-                title="Toggle sound (M)"
-              >
-                {soundOn ? "♪" : "×"}
-              </button>
             </div>
 
             <div className="panel-sep" />
