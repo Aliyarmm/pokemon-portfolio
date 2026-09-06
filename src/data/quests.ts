@@ -9,7 +9,7 @@ export interface Quest {
 export const quests: Quest[] = [
   {
     id: "finish-grimshore",
-    name: "Finish Grimshore",
+    name: "Finish Ninakk Shesham",
     description: "Complete development of the horror RPG and release v1.0.",
     status: "active",
     progress: 65,

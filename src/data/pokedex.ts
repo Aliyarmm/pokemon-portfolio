@@ -16,12 +16,12 @@ export const projects: Project[] = [
   {
     id: "grimshore",
     number: "#001",
-    name: "GRIMSHORE",
+    name: "NINAKK SHESHAM",
     type: "HORROR RPG",
     status: "active",
     description: "A procedurally generated horror RPG with dynamic AI enemies.",
     longDescription:
-      "Grimshore is an atmospheric horror RPG featuring procedurally generated worlds, AI-driven enemy behavior, and a dynamic narrative system. Each playthrough offers unique encounters and environments.",
+      "Ninakk Shesham is an atmospheric horror RPG featuring procedurally generated worlds, AI-driven enemy behavior, and a dynamic narrative system. Each playthrough offers unique encounters and environments.",
     technologies: ["Rust", "Custom Engine", "WGPU", "AI"],
     repo: "#",
     demo: "#",
