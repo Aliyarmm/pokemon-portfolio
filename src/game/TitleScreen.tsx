@@ -7,18 +7,40 @@ interface TitleScreenProps {
   visible: boolean;
 }
 
+const TITLE_TEXT = "ABID";
+const CHAR_MS = 270;
+
 export const TitleScreen: React.FC<TitleScreenProps> = ({ onStart, visible }) => {
   const [ready, setReady] = useState(false);
+  const [typed, setTyped] = useState(0);
   const isTouch =
     typeof window !== "undefined" &&
     typeof window.matchMedia === "function" &&
     window.matchMedia("(pointer: coarse)").matches;
 
-  /* brief title beat before the prompt appears */
+  /* typewriter: reveal the title one letter at a time */
   useEffect(() => {
-    const t = setTimeout(() => setReady(true), 1400);
+    if (!visible) return;
+    const id = window.setInterval(() => {
+      setTyped((t) => {
+        if (t >= TITLE_TEXT.length) {
+          window.clearInterval(id);
+          return t;
+        }
+        return t + 1;
+      });
+    }, CHAR_MS);
+    return () => window.clearInterval(id);
+  }, [visible]);
+
+  const typingDone = typed >= TITLE_TEXT.length;
+
+  /* prompt appears after the title finishes typing */
+  useEffect(() => {
+    if (!visible) return;
+    const t = setTimeout(() => setReady(true), TITLE_TEXT.length * CHAR_MS + 500);
     return () => clearTimeout(t);
-  }, []);
+  }, [visible]);
 
   /* any key starts (desktop) */
   useEffect(() => {
@@ -51,13 +73,8 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onStart, visible }) =>
           style={{ background: "linear-gradient(180deg, rgba(10,14,42,0.88) 0%, rgba(20,28,66,0.82) 100%)" }}
           onClick={handleTap}
         >
-          {/* Title */}
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center px-4"
-          >
+          {/* Title — typewriter reveal */}
+          <div className="text-center px-4">
             <div
               style={{
                 fontFamily: "var(--rpg-font)",
@@ -66,22 +83,34 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({ onStart, visible }) =>
                 textShadow: "4px 4px 0 var(--rpg-red-dark), 0 0 26px rgba(232,83,79,0.5)",
                 animation: "titleGlow 3s ease-in-out infinite",
                 letterSpacing: 2,
+                minHeight: 1.2,
               }}
             >
-              ABID
+              {TITLE_TEXT.slice(0, typed).split("").map((ch, i) => (
+                <span
+                  key={i}
+                  style={{ animation: "fadeIn 0.15s steps(1) both" }}
+                >
+                  {ch}
+                </span>
+              ))}
+              {!typingDone && <span className="dialog-caret">█</span>}
             </div>
-            <div
-              className="mt-3"
-              style={{
-                fontFamily: "var(--rpg-font)",
-                fontSize: "clamp(8px, 2.4vw, 13px)",
-                color: "#ffd54f",
-                textShadow: "2px 2px 0 rgba(0,0,0,0.6)",
-              }}
-            >
-              CREATOR VERSION
-            </div>
-          </motion.div>
+            {typingDone && (
+              <div
+                className="mt-3"
+                style={{
+                  fontFamily: "var(--rpg-font)",
+                  fontSize: "clamp(8px, 2.4vw, 13px)",
+                  color: "#ffd54f",
+                  textShadow: "2px 2px 0 rgba(0,0,0,0.6)",
+                  animation: "fadeIn 0.4s ease-out both",
+                }}
+              >
+                CREATOR VERSION
+              </div>
+            )}
+          </div>
 
           {/* press-any-key / tap-anywhere prompt */}
           <div className="mt-12 px-4 text-center min-h-[24px]">
