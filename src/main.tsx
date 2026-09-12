@@ -80,9 +80,76 @@ class RootErrorBoundary extends React.Component<
   }
 }
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+// Create the Convex client, guarding against a missing VITE_CONVEX_URL so the
+// app renders a readable error instead of crashing at module-init (which
+// bypasses React error boundaries and produces a blank page).
+// On Cloudflare Pages / Vercel / etc. the env var must be set at build time
+// (or in the dashboard's environment variables).
+let convex: ConvexReactClient | null = null;
+const convexUrl = import.meta.env.VITE_CONVEX_URL;
+if (convexUrl) {
+  try {
+    convex = new ConvexReactClient(convexUrl);
+  } catch (err) {
+    console.error("Failed to initialize Convex client:", err);
+  }
+} else {
+  console.warn(
+    'VITE_CONVEX_URL is not set. Set it in your .env.local or in your ' +
+      'deploy dashboard (e.g. Cloudflare Pages "Environment variables").',
+  );
+}
 
+// If the client couldn't be created (missing/invalid Convex URL), render a
+// helpful message instead of a blank page.
+function AppFallback() {
+  if (!convex) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground p-6">
+        <div className="max-w-lg text-center">
+          <p className="text-sm font-semibold">Configuration error</p>
+          <p className="mt-2 text-xs text-muted-foreground break-words">
+            VITE_CONVEX_URL environment variable is missing or invalid. The
+            app cannot connect to Convex backend. Set it in .env.local (local)
+            or in the deployment dashboard (production).
+          </p>
+        </div>
+      </div>
+    );
+  }
 
+  return (
+    <>
+      <ToolbarErrorBoundary>
+        <VlyToolbar />
+      </ToolbarErrorBoundary>
+      <ConvexAuthProvider client={convex}>
+        <BrowserRouter>
+          <RouteSyncer />
+          <Suspense fallback={<RouteLoading />}>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route
+                path="/auth"
+                element={<AuthPage redirectAfterAuth="/dashboard" />}
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <RequireAuth>
+                    <Dashboard />
+                  </RequireAuth>
+                }
+              />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+        <Toaster />
+      </ConvexAuthProvider>
+    </>
+  );
+}
 
 function RouteSyncer() {
   const location = useLocation();
@@ -111,33 +178,7 @@ function RouteSyncer() {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <RootErrorBoundary>
-      <ToolbarErrorBoundary>
-        <VlyToolbar />
-      </ToolbarErrorBoundary>
-      <ConvexAuthProvider client={convex}>
-        <BrowserRouter>
-          <RouteSyncer />
-          <Suspense fallback={<RouteLoading />}>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route
-                path="/auth"
-                element={<AuthPage redirectAfterAuth="/dashboard" />}
-              />
-              <Route
-                path="/dashboard"
-                element={
-                  <RequireAuth>
-                    <Dashboard />
-                  </RequireAuth>
-                }
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-        <Toaster />
-      </ConvexAuthProvider>
+      <AppFallback />
     </RootErrorBoundary>
   </StrictMode>,
 );
