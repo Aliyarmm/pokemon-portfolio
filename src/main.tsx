@@ -87,7 +87,11 @@ class RootErrorBoundary extends React.Component<
 // (or in the dashboard's environment variables).
 let convex: ConvexReactClient | null = null;
 const convexUrl = import.meta.env.VITE_CONVEX_URL;
-if (convexUrl) {
+// Guard against missing/placeholder URLs — Vite inlines `import.meta.env.VITE_*`
+// at build time, so an unset var in the dashboard becomes a placeholder string
+// like "https://<your-convex-deployment>.convex.cloud" which passes a truthy
+// check but crashes at runtime when the client tries to connect.
+if (convexUrl && !convexUrl.includes("<your-convex-deployment>")) {
   try {
     convex = new ConvexReactClient(convexUrl);
   } catch (err) {
@@ -95,8 +99,8 @@ if (convexUrl) {
   }
 } else {
   console.warn(
-    'VITE_CONVEX_URL is not set. Set it in your .env.local or in your ' +
-      'deploy dashboard (e.g. Cloudflare Pages "Environment variables").',
+    'VITE_CONVEX_URL is not set or is a placeholder. Set it in your .env.local ' +
+      'or in your deploy dashboard (e.g. Cloudflare Pages "Environment variables").',
   );
 }
 
